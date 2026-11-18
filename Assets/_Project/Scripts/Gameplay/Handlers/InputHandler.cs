@@ -1,57 +1,70 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using _Project.Scripts.Gameplay.Readers;
 
 namespace _Project.Scripts.Gameplay.Handlers
 {
     public class InputHandler : MonoBehaviour
     {
+        [SerializeField] private InputReader _reader;
+
         public event Action<Vector2> OnPrimaryPressed;
-
         public event Action<Vector2> OnSecondaryPressed;
-
         public event Action<Vector2> OnMiddlePressed;
 
-        public Vector2 PointerScreenPosition
+        private Vector2 pointerScreenPosition;
+
+        public Vector2 PointerScreenPosition => pointerScreenPosition;
+
+        private void Awake()
         {
-            get
+            if (_reader == null)
             {
-                Mouse currentMouse = Mouse.current;
-
-                if (currentMouse == null)
-                {
-                    return Vector2.zero;
-                }
-
-                return currentMouse.position.ReadValue();
+                _reader = ScriptableObject.CreateInstance<InputReader>();
             }
         }
 
-        private void Update()
+        private void OnEnable()
         {
-            Mouse currentMouse = Mouse.current;
-
-            if (currentMouse == null)
+            if (_reader != null)
             {
-                return;
+                _reader.PositionAction += HandlePosition;
+                _reader.PrimaryPressed += HandlePrimary;
+                _reader.SecondaryPressed += HandleSecondary;
+                _reader.MiddlePressed += HandleMiddle;
             }
+        }
 
-            Vector2 screenPosition = currentMouse.position.ReadValue();
-
-            if (currentMouse.leftButton.wasPressedThisFrame)
+        private void OnDisable()
+        {
+            if (_reader != null)
             {
-                OnPrimaryPressed?.Invoke(screenPosition);
+                _reader.PositionAction -= HandlePosition;
+                _reader.PrimaryPressed -= HandlePrimary;
+                _reader.SecondaryPressed -= HandleSecondary;
+                _reader.MiddlePressed -= HandleMiddle;
             }
+        }
 
-            if (currentMouse.rightButton.wasPressedThisFrame)
-            {
-                OnSecondaryPressed?.Invoke(screenPosition);
-            }
+        private void HandlePosition(Vector2 position)
+        {
+            pointerScreenPosition = position;
+        }
 
-            if (currentMouse.middleButton.wasPressedThisFrame)
-            {
-                OnMiddlePressed?.Invoke(screenPosition);
-            }
+        private void HandlePrimary()
+        {
+            OnPrimaryPressed?.Invoke(pointerScreenPosition);
+        }
+
+        private void HandleSecondary()
+        {
+            OnSecondaryPressed?.Invoke(pointerScreenPosition);
+        }
+
+        private void HandleMiddle()
+        {
+            OnMiddlePressed?.Invoke(pointerScreenPosition);
         }
     }
 }
