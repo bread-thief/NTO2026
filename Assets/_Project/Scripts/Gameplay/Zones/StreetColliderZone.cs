@@ -1,0 +1,160 @@
+using UnityEngine;
+
+namespace _Project.Scripts.Gameplay.Zones
+{
+    [RequireComponent(typeof(BoxCollider))]
+    [RequireComponent(typeof(MeshFilter))]
+    [RequireComponent(typeof(MeshRenderer))]
+    public class StreetColliderZone : MonoBehaviour
+    {
+        private const float DEFAULT_COLLIDER_HEIGHT = 1.5f;
+        private const float DEFAULT_STREET_WIDTH = 4.0f;
+        private const float CUBE_HEIGHT_SCALE = 0.05f;
+        private const float CUBE_Y_OFFSET = 0.03f;
+
+        private BoxCollider zoneCollider;
+        private MeshFilter highlightMeshFilter;
+        private MeshRenderer highlightMeshRenderer;
+        private Material highlightMaterial;
+
+        public string StreetAddress { get; private set; }
+
+        private void Awake()
+        {
+            CacheComponents();
+        }
+
+        public void Initialize(string streetAddress, Vector3 colliderSize, Material assignedHighlightMaterial)
+        {
+            StreetAddress = streetAddress;
+
+            highlightMaterial = assignedHighlightMaterial;
+
+            CacheComponents();
+
+            zoneCollider.isTrigger = true;
+
+            zoneCollider.center = Vector3.zero;
+
+            zoneCollider.size = colliderSize;
+
+            float cubeWidth = colliderSize.x;
+
+            float cubeLength = colliderSize.z;
+
+            float cubeHeight = colliderSize.y * CUBE_HEIGHT_SCALE;
+
+            highlightMeshFilter.sharedMesh = CreateCubeMesh(cubeWidth, cubeHeight, cubeLength);
+
+            highlightMeshRenderer.sharedMaterial = highlightMaterial;
+
+            highlightMeshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+            highlightMeshRenderer.receiveShadows = false;
+
+            highlightMeshRenderer.enabled = false;
+        }
+
+        public void Initialize(string streetAddress, bool isHorizontal, float length, Material assignedHighlightMaterial)
+        {
+            Initialize(streetAddress, isHorizontal, length, DEFAULT_STREET_WIDTH, assignedHighlightMaterial);
+        }
+
+        public void Initialize(string streetAddress, bool isHorizontal, float length, float width, Material assignedHighlightMaterial)
+        {
+            Vector3 computedSize = isHorizontal
+                ? new Vector3(length, DEFAULT_COLLIDER_HEIGHT, width)
+                : new Vector3(width, DEFAULT_COLLIDER_HEIGHT, length);
+
+            Initialize(streetAddress, computedSize, assignedHighlightMaterial);
+        }
+
+        public void SetHighlighted(bool isHighlighted)
+        {
+            if (highlightMeshRenderer == null)
+            {
+                return;
+            }
+
+            if (isHighlighted && highlightMaterial != null)
+            {
+                highlightMeshRenderer.sharedMaterial = highlightMaterial;
+
+                highlightMeshRenderer.enabled = true;
+            }
+            else
+            {
+                highlightMeshRenderer.enabled = false;
+            }
+        }
+
+        private void CacheComponents()
+        {
+            if (zoneCollider == null)
+            {
+                zoneCollider = GetComponent<BoxCollider>();
+            }
+
+            if (highlightMeshFilter == null)
+            {
+                highlightMeshFilter = GetComponent<MeshFilter>();
+            }
+
+            if (highlightMeshRenderer == null)
+            {
+                highlightMeshRenderer = GetComponent<MeshRenderer>();
+            }
+        }
+
+        private Mesh CreateCubeMesh(float width, float height, float length)
+        {
+            Mesh cubeMesh = new Mesh();
+
+            float halfWidth = width * 0.5f;
+
+            float halfLength = length * 0.5f;
+
+            float bottomY = CUBE_Y_OFFSET;
+
+            float topY = CUBE_Y_OFFSET + height;
+
+            Vector3[] vertices = new Vector3[]
+            {
+                new Vector3(-halfWidth, bottomY, -halfLength),
+                new Vector3(halfWidth, bottomY, -halfLength),
+                new Vector3(halfWidth, bottomY, halfLength),
+                new Vector3(-halfWidth, bottomY, halfLength),
+                new Vector3(-halfWidth, topY, -halfLength),
+                new Vector3(halfWidth, topY, -halfLength),
+                new Vector3(halfWidth, topY, halfLength),
+                new Vector3(-halfWidth, topY, halfLength)
+            };
+
+            int[] triangles = new int[]
+            {
+                0, 2, 1,
+                0, 3, 2,
+                4, 5, 6,
+                4, 6, 7,
+                0, 1, 5,
+                0, 5, 4,
+                1, 2, 6,
+                1, 6, 5,
+                2, 3, 7,
+                2, 7, 6,
+                3, 0, 4,
+                3, 4, 7
+            };
+
+            cubeMesh.vertices = vertices;
+
+            cubeMesh.triangles = triangles;
+
+            cubeMesh.RecalculateNormals();
+
+            cubeMesh.RecalculateBounds();
+
+            return cubeMesh;
+        }
+    }
+}
