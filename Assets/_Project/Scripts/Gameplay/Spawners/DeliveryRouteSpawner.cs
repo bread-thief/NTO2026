@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using _Project.Scripts.Gameplay.Bakers;
 using _Project.Scripts.Gameplay.Controllers;
@@ -16,20 +17,20 @@ namespace _Project.Scripts.Gameplay.Spawners
         private const float NAVMESH_SAMPLE_RADIUS = 15f;
         private const int MAX_PAIR_ATTEMPTS = 250;
 
-        [field: SerializeField] public CityGenerator Generator { get; private set; }
-        [field: SerializeField] public CityNavMeshBaker NavMeshBaker { get; private set; }
-        [field: SerializeField] public CityStreetNamer StreetNamer { get; private set; }
-        [field: SerializeField] public RoutePlannerController RoutePlanner { get; private set; }
-        [field: SerializeField] public DeliveryRouteNode PointAPrefab { get; private set; }
-        [field: SerializeField] public DeliveryRouteNode PointBPrefab { get; private set; }
-        [field: SerializeField] public RouteVehicleDriver VehiclePrefab { get; private set; }
-        [field: SerializeField] public int MinimumDistanceInCells { get; private set; } = 5;
+        [SerializeField] private CityGenerator _generator;
+        [SerializeField] private CityNavMeshBaker _navMeshBaker;
+        [SerializeField] private CityStreetNamer _streetNamer;
+        [SerializeField] private RoutePlannerController _routePlanner;
+        [SerializeField] private DeliveryRouteNode _pointAPrefab;
+        [SerializeField] private DeliveryRouteNode _pointBPrefab;
+        [SerializeField] private RouteVehicleDriver _vehiclePrefab;
+        [SerializeField] private int _minimumDistanceInCells = 5;
 
         public DeliveryRouteNode SpawnedPointA { get; private set; }
         public DeliveryRouteNode SpawnedPointB { get; private set; }
         public RouteVehicleDriver SpawnedVehicle { get; private set; }
 
-        private bool hasSpawnedForCurrentCity;
+        private bool _hasSpawnedForCurrentCity;
 
         private void Awake()
         {
@@ -40,27 +41,27 @@ namespace _Project.Scripts.Gameplay.Spawners
         {
             ResolveMissingSceneReferences();
 
-            if (Generator != null)
+            if (_generator != null)
             {
-                Generator.OnGenerated += HandleCityGenerated;
+                _generator.OnGenerated += HandleCityGenerated;
             }
 
-            if (NavMeshBaker != null)
+            if (_navMeshBaker != null)
             {
-                NavMeshBaker.OnNavMeshBaked += HandleNavMeshBaked;
+                _navMeshBaker.OnNavMeshBaked += HandleNavMeshBaked;
             }
         }
 
         private void OnDisable()
         {
-            if (Generator != null)
+            if (_generator != null)
             {
-                Generator.OnGenerated -= HandleCityGenerated;
+                _generator.OnGenerated -= HandleCityGenerated;
             }
 
-            if (NavMeshBaker != null)
+            if (_navMeshBaker != null)
             {
-                NavMeshBaker.OnNavMeshBaked -= HandleNavMeshBaked;
+                _navMeshBaker.OnNavMeshBaked -= HandleNavMeshBaked;
             }
         }
 
@@ -68,7 +69,7 @@ namespace _Project.Scripts.Gameplay.Spawners
         {
             ResolveMissingSceneReferences();
 
-            if (!hasSpawnedForCurrentCity && NavMeshBaker != null && NavMeshBaker.IsNavMeshBaked)
+            if (!_hasSpawnedForCurrentCity && _navMeshBaker != null && _navMeshBaker.IsNavMeshBaked)
             {
                 SpawnDeliveryRoute();
             }
@@ -76,7 +77,7 @@ namespace _Project.Scripts.Gameplay.Spawners
 
         private void HandleCityGenerated()
         {
-            hasSpawnedForCurrentCity = false;
+            _hasSpawnedForCurrentCity = false;
             ClearSpawnedObjects();
         }
 
@@ -91,11 +92,8 @@ namespace _Project.Scripts.Gameplay.Spawners
             ResolveMissingSceneReferences();
             ClearSpawnedObjects();
 
-            if (Generator == null || PointAPrefab == null || PointBPrefab == null || VehiclePrefab == null)
+            if (_generator == null || _pointAPrefab == null || _pointBPrefab == null || _vehiclePrefab == null)
             {
-#if UNITY_EDITOR
-                Debug.LogWarning("[DeliveryRouteSpawner] Не назначены обязательные ссылки (Generator, PointAPrefab, PointBPrefab или VehiclePrefab).");
-#endif
                 return;
             }
 
@@ -108,16 +106,13 @@ namespace _Project.Scripts.Gameplay.Spawners
 
             if (!TryFindValidEndpoints(roadCells, out Vector3 pointAPosition, out Vector3 pointBPosition))
             {
-#if UNITY_EDITOR
-                Debug.LogWarning("[DeliveryRouteSpawner] Не удалось найти две подходящие дорожные точки.");
-#endif
                 return;
             }
 
-            SpawnedPointA = Instantiate(PointAPrefab, pointAPosition, Quaternion.identity, transform);
+            SpawnedPointA = Instantiate(_pointAPrefab, pointAPosition, Quaternion.identity, transform);
             SpawnedPointA.SnapToRoadNavMesh(pointAPosition);
 
-            SpawnedPointB = Instantiate(PointBPrefab, pointBPosition, Quaternion.identity, transform);
+            SpawnedPointB = Instantiate(_pointBPrefab, pointBPosition, Quaternion.identity, transform);
             SpawnedPointB.SnapToRoadNavMesh(pointBPosition);
 
             Vector3 spawnPosition = SpawnedPointA.RoadNavMeshPosition;
@@ -131,12 +126,12 @@ namespace _Project.Scripts.Gameplay.Spawners
                 vehicleRotation = Quaternion.LookRotation(directionToTarget.normalized, Vector3.up);
             }
 
-            bool previousPrefabActiveState = VehiclePrefab.gameObject.activeSelf;
-            VehiclePrefab.gameObject.SetActive(false);
+            bool previousPrefabActiveState = _vehiclePrefab.gameObject.activeSelf;
+            _vehiclePrefab.gameObject.SetActive(false);
 
-            SpawnedVehicle = Instantiate(VehiclePrefab, spawnPosition, vehicleRotation, transform);
+            SpawnedVehicle = Instantiate(_vehiclePrefab, spawnPosition, vehicleRotation, transform);
 
-            VehiclePrefab.gameObject.SetActive(previousPrefabActiveState);
+            _vehiclePrefab.gameObject.SetActive(previousPrefabActiveState);
 
             if (NavMesh.SamplePosition(spawnPosition, out NavMeshHit navMeshHit, NAVMESH_SAMPLE_RADIUS * 2f, NavMesh.AllAreas))
             {
@@ -146,12 +141,12 @@ namespace _Project.Scripts.Gameplay.Spawners
             SpawnedVehicle.gameObject.SetActive(true);
             SpawnedVehicle.StopAndReset(SpawnedVehicle.transform.position);
 
-            if (RoutePlanner != null)
+            if (_routePlanner != null)
             {
-                RoutePlanner.ConfigureRouteEndpoints(SpawnedPointA, SpawnedPointB, SpawnedVehicle);
+                _routePlanner.ConfigureRouteEndpoints(SpawnedPointA, SpawnedPointB, SpawnedVehicle);
             }
 
-            hasSpawnedForCurrentCity = true;
+            _hasSpawnedForCurrentCity = true;
         }
 
         public void ClearSpawnedObjects()
@@ -189,37 +184,37 @@ namespace _Project.Scripts.Gameplay.Spawners
 
         private void ResolveMissingSceneReferences()
         {
-            if (Generator == null)
+            if (_generator == null)
             {
-                Generator = FindAnyObjectByType<CityGenerator>();
+                _generator = FindAnyObjectByType<CityGenerator>();
             }
 
-            if (NavMeshBaker == null)
+            if (_navMeshBaker == null)
             {
-                NavMeshBaker = FindAnyObjectByType<CityNavMeshBaker>();
+                _navMeshBaker = FindAnyObjectByType<CityNavMeshBaker>();
             }
 
-            if (StreetNamer == null)
+            if (_streetNamer == null)
             {
-                StreetNamer = FindAnyObjectByType<CityStreetNamer>();
+                _streetNamer = FindAnyObjectByType<CityStreetNamer>();
             }
 
-            if (RoutePlanner == null)
+            if (_routePlanner == null)
             {
-                RoutePlanner = FindAnyObjectByType<RoutePlannerController>();
+                _routePlanner = FindAnyObjectByType<RoutePlannerController>();
             }
         }
 
         private List<Vector2Int> CollectAllRoadCells()
         {
             List<Vector2Int> roadCells = new List<Vector2Int>();
-            Vector2Int gridDimensions = Generator.GetGridDimensions;
+            Vector2Int gridDimensions = _generator.GetGridDimensions;
 
             for (int columnIndex = 0; columnIndex < gridDimensions.x; columnIndex++)
             {
                 for (int rowIndex = 0; rowIndex < gridDimensions.y; rowIndex++)
                 {
-                    CityBlockPreset preset = Generator.GetSpawnedPresetAt(columnIndex, rowIndex);
+                    CityBlockPreset preset = _generator.GetSpawnedPresetAt(columnIndex, rowIndex);
 
                     if (preset != null && preset.RoadCount > 0)
                     {
@@ -237,7 +232,7 @@ namespace _Project.Scripts.Gameplay.Spawners
             pointBPosition = Vector3.zero;
 
             int roadAreaMask = ResolveRoadAreaMask();
-            int minDistance = Mathf.Max(1, MinimumDistanceInCells);
+            int minDistance = Mathf.Max(1, _minimumDistanceInCells);
 
             if (TrySearchEndpointPair(roadCells, minDistance, true, roadAreaMask, out pointAPosition, out pointBPosition))
             {
@@ -254,7 +249,12 @@ namespace _Project.Scripts.Gameplay.Spawners
                 return true;
             }
 
-            return TryFallbackRawCellPositions(roadCells, out pointAPosition, out pointBPosition);
+            if (TryFallbackRawCellPositions(roadCells, out pointAPosition, out pointBPosition))
+            {
+                return true;
+            }
+
+            return TryFindAnyTwoSnappedCells(roadCells, out pointAPosition, out pointBPosition);
         }
 
         private bool TrySearchEndpointPair(
@@ -272,8 +272,8 @@ namespace _Project.Scripts.Gameplay.Spawners
 
             for (int attemptIndex = 0; attemptIndex < MAX_PAIR_ATTEMPTS; attemptIndex++)
             {
-                Vector2Int cellA = roadCells[Random.Range(0, roadCells.Count)];
-                Vector2Int cellB = roadCells[Random.Range(0, roadCells.Count)];
+                Vector2Int cellA = roadCells[UnityEngine.Random.Range(0, roadCells.Count)];
+                Vector2Int cellB = roadCells[UnityEngine.Random.Range(0, roadCells.Count)];
 
                 if (cellA == cellB)
                 {
@@ -292,8 +292,8 @@ namespace _Project.Scripts.Gameplay.Spawners
                     continue;
                 }
 
-                Vector3 worldA = Generator.GetWorldPositionFromCellCoordinates(cellA.x, cellA.y);
-                Vector3 worldB = Generator.GetWorldPositionFromCellCoordinates(cellB.x, cellB.y);
+                Vector3 worldA = _generator.GetWorldPositionFromCellCoordinates(cellA.x, cellA.y);
+                Vector3 worldB = _generator.GetWorldPositionFromCellCoordinates(cellB.x, cellB.y);
 
                 if (!NavMesh.SamplePosition(worldA, out NavMeshHit hitA, NAVMESH_SAMPLE_RADIUS, areaMask))
                 {
@@ -346,27 +346,70 @@ namespace _Project.Scripts.Gameplay.Spawners
                 }
             }
 
-            pointAPosition = Generator.GetWorldPositionFromCellCoordinates(bestCellA.x, bestCellA.y);
-            pointBPosition = Generator.GetWorldPositionFromCellCoordinates(bestCellB.x, bestCellB.y);
-            return true;
+            pointAPosition = _generator.GetWorldPositionFromCellCoordinates(bestCellA.x, bestCellA.y);
+            pointBPosition = _generator.GetWorldPositionFromCellCoordinates(bestCellB.x, bestCellB.y);
+
+            return bestDistance > 0;
+        }
+
+        private bool TryFindAnyTwoSnappedCells(List<Vector2Int> roadCells, out Vector3 pointAPosition, out Vector3 pointBPosition)
+        {
+            pointAPosition = Vector3.zero;
+            pointBPosition = Vector3.zero;
+
+            bool foundA = false;
+
+            for (int firstIndex = 0; firstIndex < roadCells.Count; firstIndex++)
+            {
+                Vector2Int cellA = roadCells[firstIndex];
+                Vector3 worldA = _generator.GetWorldPositionFromCellCoordinates(cellA.x, cellA.y);
+
+                if (!NavMesh.SamplePosition(worldA, out NavMeshHit hitA, NAVMESH_SAMPLE_RADIUS, NavMesh.AllAreas))
+                {
+                    continue;
+                }
+
+                for (int secondIndex = firstIndex + 1; secondIndex < roadCells.Count; secondIndex++)
+                {
+                    Vector2Int cellB = roadCells[secondIndex];
+                    Vector3 worldB = _generator.GetWorldPositionFromCellCoordinates(cellB.x, cellB.y);
+
+                    if (!NavMesh.SamplePosition(worldB, out NavMeshHit hitB, NAVMESH_SAMPLE_RADIUS, NavMesh.AllAreas))
+                    {
+                        continue;
+                    }
+
+                    pointAPosition = hitA.position;
+                    pointBPosition = hitB.position;
+                    foundA = true;
+                    break;
+                }
+
+                if (foundA)
+                {
+                    break;
+                }
+            }
+
+            return foundA;
         }
 
         private bool AreCellsOnDifferentStreets(Vector2Int cellA, Vector2Int cellB)
         {
-            if (StreetNamer == null)
+            if (_streetNamer == null)
             {
                 return true;
             }
 
-            string streetA = StreetNamer.GetStreetAddressAtCell(cellA);
-            string streetB = StreetNamer.GetStreetAddressAtCell(cellB);
+            string streetA = _streetNamer.GetStreetAddressAtCell(cellA);
+            string streetB = _streetNamer.GetStreetAddressAtCell(cellB);
 
             if (string.IsNullOrEmpty(streetA) || string.IsNullOrEmpty(streetB))
             {
                 return true;
             }
 
-            return !string.Equals(streetA, streetB, System.StringComparison.OrdinalIgnoreCase);
+            return !string.Equals(streetA, streetB, StringComparison.OrdinalIgnoreCase);
         }
 
         private int ResolveRoadAreaMask()

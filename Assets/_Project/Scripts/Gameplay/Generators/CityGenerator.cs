@@ -12,16 +12,16 @@ namespace _Project.Scripts.Gameplay.Generators
         private const int MAX_DEAD_END_COUNT = 3;
         private const float DEAD_END_SPAWN_CHANCE = 0.08f;
 
-        [field: SerializeField] public Vector2 Size { get; private set; } = new Vector2(10f, 10f);
-        [field: SerializeField] public float CellSize { get; private set; } = 10f;
-        [field: SerializeField] public bool GenerateOnStart { get; private set; } = true;
-        [field: SerializeField] public List<CityBlockPreset> RoadPresets { get; private set; } = new List<CityBlockPreset>();
-        [field: SerializeField] public List<CityBlockPreset> EmptyPresets { get; private set; } = new List<CityBlockPreset>();
+        [SerializeField] private Vector2 _size = new Vector2(10f, 10f);
+        [SerializeField] private float _cellSize = 10f;
+        [SerializeField] private bool _generateOnStart = true;
+        [SerializeField] private List<CityBlockPreset> _roadPresets = new List<CityBlockPreset>();
+        [SerializeField] private List<CityBlockPreset> _emptyPresets = new List<CityBlockPreset>();
 
         public event Action OnGenerated;
 
-        private CityBlockPreset[,] spawnedPresets;
-        private int[,] spawnedRotations;
+        private CityBlockPreset[,] _spawnedPresets;
+        private int[,] _spawnedRotations;
 
         private struct CellPlan
         {
@@ -36,13 +36,16 @@ namespace _Project.Scripts.Gameplay.Generators
             public int RotationSteps;
         }
 
-        private int GridWidth => Mathf.Max(3, Mathf.RoundToInt(Size.x));
+        private int GridWidth => Mathf.Max(3, Mathf.RoundToInt(_size.x));
 
-        private int GridHeight => Mathf.Max(3, Mathf.RoundToInt(Size.y));
+        private int GridHeight => Mathf.Max(3, Mathf.RoundToInt(_size.y));
+
+        public float CellSize => _cellSize;
+        public Vector2Int GetGridDimensions => new Vector2Int(GridWidth, GridHeight);
 
         private void Start()
         {
-            if (GenerateOnStart)
+            if (_generateOnStart)
             {
                 Generate();
             }
@@ -53,12 +56,12 @@ namespace _Project.Scripts.Gameplay.Generators
         {
             ClearCity();
 
-            if (RoadPresets == null || RoadPresets.Count == 0)
+            if (_roadPresets == null || _roadPresets.Count == 0)
             {
                 return;
             }
 
-            if (EmptyPresets == null || EmptyPresets.Count == 0)
+            if (_emptyPresets == null || _emptyPresets.Count == 0)
             {
                 return;
             }
@@ -80,8 +83,8 @@ namespace _Project.Scripts.Gameplay.Generators
         [ContextMenu("Clear City")]
         public void ClearCity()
         {
-            spawnedPresets = null;
-            spawnedRotations = null;
+            _spawnedPresets = null;
+            _spawnedRotations = null;
 
             for (int childIndex = transform.childCount - 1; childIndex >= 0; childIndex--)
             {
@@ -98,58 +101,56 @@ namespace _Project.Scripts.Gameplay.Generators
             }
         }
 
-        public Vector2Int GetGridDimensions => new Vector2Int(GridWidth, GridHeight);
-
         public CityBlockPreset GetSpawnedPresetAt(int columnIndex, int rowIndex)
         {
-            if (spawnedPresets == null)
+            if (_spawnedPresets == null)
             {
                 return null;
             }
 
-            if (columnIndex < 0 || columnIndex >= spawnedPresets.GetLength(0))
+            if (columnIndex < 0 || columnIndex >= _spawnedPresets.GetLength(0))
             {
                 return null;
             }
 
-            if (rowIndex < 0 || rowIndex >= spawnedPresets.GetLength(1))
+            if (rowIndex < 0 || rowIndex >= _spawnedPresets.GetLength(1))
             {
                 return null;
             }
 
-            return spawnedPresets[columnIndex, rowIndex];
+            return _spawnedPresets[columnIndex, rowIndex];
         }
 
         public int GetSpawnedRotationAt(int columnIndex, int rowIndex)
         {
-            if (spawnedRotations == null)
+            if (_spawnedRotations == null)
             {
                 return 0;
             }
 
-            if (columnIndex < 0 || columnIndex >= spawnedRotations.GetLength(0))
+            if (columnIndex < 0 || columnIndex >= _spawnedRotations.GetLength(0))
             {
                 return 0;
             }
 
-            if (rowIndex < 0 || rowIndex >= spawnedRotations.GetLength(1))
+            if (rowIndex < 0 || rowIndex >= _spawnedRotations.GetLength(1))
             {
                 return 0;
             }
 
-            return spawnedRotations[columnIndex, rowIndex];
+            return _spawnedRotations[columnIndex, rowIndex];
         }
 
         public Vector3 GetWorldPositionFromCellCoordinates(int columnIndex, int rowIndex)
         {
-            return transform.position + new Vector3(columnIndex * CellSize, 0f, rowIndex * CellSize);
+            return transform.position + new Vector3(columnIndex * _cellSize, 0f, rowIndex * _cellSize);
         }
 
         public Vector2Int GetCellCoordinatesFromWorldPosition(Vector3 worldPosition)
         {
             Vector3 localPosition = worldPosition - transform.position;
-            int columnIndex = Mathf.RoundToInt(localPosition.x / CellSize);
-            int rowIndex = Mathf.RoundToInt(localPosition.z / CellSize);
+            int columnIndex = Mathf.RoundToInt(localPosition.x / _cellSize);
+            int rowIndex = Mathf.RoundToInt(localPosition.z / _cellSize);
 
             return new Vector2Int(columnIndex, rowIndex);
         }
@@ -534,7 +535,7 @@ namespace _Project.Scripts.Gameplay.Generators
                             requiredSides[directionIndex] = connections[columnIndex, rowIndex, directionIndex];
                         }
 
-                        List<CandidateOption> roadCandidates = FindMatchingCandidates(RoadPresets, requiredSides);
+                        List<CandidateOption> roadCandidates = FindMatchingCandidates(_roadPresets, requiredSides);
 
                         if (roadCandidates.Count == 0)
                         {
@@ -576,9 +577,9 @@ namespace _Project.Scripts.Gameplay.Generators
         {
             List<CityBlockPreset> validEmptyPresets = new List<CityBlockPreset>();
 
-            for (int presetIndex = 0; presetIndex < EmptyPresets.Count; presetIndex++)
+            for (int presetIndex = 0; presetIndex < _emptyPresets.Count; presetIndex++)
             {
-                CityBlockPreset preset = EmptyPresets[presetIndex];
+                CityBlockPreset preset = _emptyPresets[presetIndex];
 
                 if (preset != null)
                 {
@@ -725,8 +726,8 @@ namespace _Project.Scripts.Gameplay.Generators
 
         private void InstantiateGrid(CellPlan[,] grid, int width, int height)
         {
-            spawnedPresets = new CityBlockPreset[width, height];
-            spawnedRotations = new int[width, height];
+            _spawnedPresets = new CityBlockPreset[width, height];
+            _spawnedRotations = new int[width, height];
 
             for (int columnIndex = 0; columnIndex < width; columnIndex++)
             {
@@ -744,8 +745,8 @@ namespace _Project.Scripts.Gameplay.Generators
 
                     Instantiate(plan.Preset, worldPosition, worldRotation, transform);
 
-                    spawnedPresets[columnIndex, rowIndex] = plan.Preset;
-                    spawnedRotations[columnIndex, rowIndex] = plan.RotationSteps;
+                    _spawnedPresets[columnIndex, rowIndex] = plan.Preset;
+                    _spawnedRotations[columnIndex, rowIndex] = plan.RotationSteps;
                 }
             }
         }
@@ -841,9 +842,9 @@ namespace _Project.Scripts.Gameplay.Generators
 
         private bool HasPresetWithRoadCount(int targetRoadCount)
         {
-            for (int presetIndex = 0; presetIndex < RoadPresets.Count; presetIndex++)
+            for (int presetIndex = 0; presetIndex < _roadPresets.Count; presetIndex++)
             {
-                CityBlockPreset preset = RoadPresets[presetIndex];
+                CityBlockPreset preset = _roadPresets[presetIndex];
 
                 if (preset != null && preset.RoadCount == targetRoadCount)
                 {

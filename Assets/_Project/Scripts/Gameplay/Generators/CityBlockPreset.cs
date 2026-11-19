@@ -13,11 +13,13 @@ namespace _Project.Scripts.Gameplay.Generators
         private const float GIZMO_LINE_LENGTH = 4f;
         private const float GIZMO_SPHERE_RADIUS = 0.25f;
 
-        [field: SerializeField] public bool NorthRoad { get; private set; }
-        [field: SerializeField] public bool EastRoad { get; private set; }
-        [field: SerializeField] public bool SouthRoad { get; private set; }
-        [field: SerializeField] public bool WestRoad { get; private set; }
-        [field: SerializeField, Min(1)] public int Weight { get; private set; } = 1;
+        [SerializeField] private bool _northRoad;
+        [SerializeField] private bool _eastRoad;
+        [SerializeField] private bool _southRoad;
+        [SerializeField] private bool _westRoad;
+        [SerializeField, Min(1)] private int _weight = 1;
+
+        public int Weight => _weight;
 
         public int RoadCount
         {
@@ -25,22 +27,22 @@ namespace _Project.Scripts.Gameplay.Generators
             {
                 int count = 0;
 
-                if (NorthRoad)
+                if (_northRoad)
                 {
                     count++;
                 }
 
-                if (EastRoad)
+                if (_eastRoad)
                 {
                     count++;
                 }
 
-                if (SouthRoad)
+                if (_southRoad)
                 {
                     count++;
                 }
 
-                if (WestRoad)
+                if (_westRoad)
                 {
                     count++;
                 }
@@ -57,20 +59,20 @@ namespace _Project.Scripts.Gameplay.Generators
 
             if (originalDirection == Direction.North)
             {
-                return NorthRoad;
+                return _northRoad;
             }
 
             if (originalDirection == Direction.East)
             {
-                return EastRoad;
+                return _eastRoad;
             }
 
             if (originalDirection == Direction.South)
             {
-                return SouthRoad;
+                return _southRoad;
             }
 
-            return WestRoad;
+            return _westRoad;
         }
 
 #if UNITY_EDITOR

@@ -10,49 +10,40 @@ namespace _Project.Scripts.Gameplay.Views
     {
         private const float MAX_RAYCAST_DISTANCE = 500f;
 
-        [field: SerializeField]
-        public InputHandler InputHandler { get; private set; }
+        [SerializeField] private InputHandler _inputHandler;
+        [SerializeField] private Camera _targetCamera;
+        [SerializeField] private TMP_Text _streetNameText;
+        [SerializeField] private LayerMask _streetZoneLayer = ~0;
+        [SerializeField] private string _emptyStreetFallbackText = string.Empty;
 
-        [field: SerializeField]
-        public Camera TargetCamera { get; private set; }
-
-        [field: SerializeField]
-        public TMP_Text StreetNameText { get; private set; }
-
-        [field: SerializeField]
-        public LayerMask StreetZoneLayer { get; private set; } = ~0;
-
-        [field: SerializeField]
-        public string EmptyStreetFallbackText { get; private set; } = string.Empty;
-
-        private StreetColliderZone selectedZone;
+        private StreetColliderZone _selectedZone;
 
         private void Awake()
         {
-            if (TargetCamera == null)
+            if (_targetCamera == null)
             {
-                TargetCamera = Camera.main;
+                _targetCamera = Camera.main;
             }
 
-            if (InputHandler == null)
+            if (_inputHandler == null)
             {
-                InputHandler = FindAnyObjectByType<InputHandler>();
+                _inputHandler = FindAnyObjectByType<InputHandler>();
             }
         }
 
         private void OnEnable()
         {
-            if (InputHandler != null)
+            if (_inputHandler != null)
             {
-                InputHandler.OnMiddlePressed += HandleMiddleButtonPressed;
+                _inputHandler.OnMiddlePressed += HandleMiddleButtonPressed;
             }
         }
 
         private void OnDisable()
         {
-            if (InputHandler != null)
+            if (_inputHandler != null)
             {
-                InputHandler.OnMiddlePressed -= HandleMiddleButtonPressed;
+                _inputHandler.OnMiddlePressed -= HandleMiddleButtonPressed;
             }
 
             ClearCurrentSelection();
@@ -65,20 +56,20 @@ namespace _Project.Scripts.Gameplay.Views
 
         private void HandleMiddleButtonPressed(Vector2 screenPosition)
         {
-            if (TargetCamera == null)
+            if (_targetCamera == null)
             {
                 return;
             }
 
-            Ray pointerRay = TargetCamera.ScreenPointToRay(screenPosition);
+            Ray pointerRay = _targetCamera.ScreenPointToRay(screenPosition);
 
-            if (Physics.Raycast(pointerRay, out RaycastHit hitInfo, MAX_RAYCAST_DISTANCE, StreetZoneLayer, QueryTriggerInteraction.Collide))
+            if (Physics.Raycast(pointerRay, out RaycastHit hitInfo, MAX_RAYCAST_DISTANCE, _streetZoneLayer, QueryTriggerInteraction.Collide))
             {
                 StreetColliderZone hitZone = hitInfo.collider.GetComponent<StreetColliderZone>();
 
                 if (hitZone != null)
                 {
-                    if (selectedZone == hitZone)
+                    if (_selectedZone == hitZone)
                     {
                         ClearCurrentSelection();
 
@@ -96,34 +87,34 @@ namespace _Project.Scripts.Gameplay.Views
 
         private void SelectZone(StreetColliderZone targetZone)
         {
-            if (selectedZone != null)
+            if (_selectedZone != null)
             {
-                selectedZone.SetHighlighted(false);
+                _selectedZone.SetHighlighted(false);
             }
 
-            selectedZone = targetZone;
+            _selectedZone = targetZone;
 
-            selectedZone.SetHighlighted(true);
+            _selectedZone.SetHighlighted(true);
 
-            UpdateStreetText(selectedZone.StreetAddress);
+            UpdateStreetText(_selectedZone.StreetAddress);
         }
 
         private void ClearCurrentSelection()
         {
-            if (selectedZone != null)
+            if (_selectedZone != null)
             {
-                selectedZone.SetHighlighted(false);
-                selectedZone = null;
+                _selectedZone.SetHighlighted(false);
+                _selectedZone = null;
             }
 
-            UpdateStreetText(EmptyStreetFallbackText);
+            UpdateStreetText(_emptyStreetFallbackText);
         }
 
         private void UpdateStreetText(string displayText)
         {
-            if (StreetNameText != null)
+            if (_streetNameText != null)
             {
-                StreetNameText.text = displayText;
+                _streetNameText.text = displayText;
             }
         }
     }

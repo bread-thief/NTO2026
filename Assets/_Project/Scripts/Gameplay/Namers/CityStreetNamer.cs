@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using _Project.Scripts.Gameplay.Generators;
 using _Project.Scripts.Gameplay.Zones;
@@ -19,10 +20,11 @@ namespace _Project.Scripts.Gameplay.Namers
         private const float ROAD_WIDTH_RATIO = 0.85f;
         private const float COLLIDER_Y_OFFSET = 0.25f;
 
-        [field: SerializeField] public CityGenerator Generator { get; private set; }
-        [field: SerializeField] public LayerMask StreetZoneLayer { get; private set; }
-        [field: SerializeField] public Material StreetHighlightMaterial { get; private set; }
-        [field: SerializeField] public List<string> StreetNameWords { get; private set; } = new List<string>()
+        [SerializeField] private CityGenerator _generator;
+        [SerializeField] private LayerMask _streetZoneLayer;
+        [SerializeField] private Material _streetHighlightMaterial;
+        [SerializeField]
+        private List<string> _streetNameWords = new List<string>()
         {
             "Мира", "Лесная", "Советская", "Центральная", "Победы",
             "Молодёжная", "Садовая", "Школьная", "Новая", "Набережная",
@@ -30,8 +32,8 @@ namespace _Project.Scripts.Gameplay.Namers
             "Строителей", "Парковая", "Солнечная", "Юности", "Геологов"
         };
 
-        private readonly Dictionary<Vector2Int, string> cellStreetAddresses = new Dictionary<Vector2Int, string>();
-        private readonly List<StreetColliderZone> spawnedZones = new List<StreetColliderZone>();
+        private readonly Dictionary<Vector2Int, string> _cellStreetAddresses = new Dictionary<Vector2Int, string>();
+        private readonly List<StreetColliderZone> _spawnedZones = new List<StreetColliderZone>();
 
         private struct StreetSegment
         {
@@ -43,33 +45,33 @@ namespace _Project.Scripts.Gameplay.Namers
 
         private void Awake()
         {
-            if (Generator == null)
+            if (_generator == null)
             {
-                Generator = GetComponent<CityGenerator>();
+                _generator = GetComponent<CityGenerator>();
             }
         }
 
         private void OnEnable()
         {
-            if (Generator != null)
+            if (_generator != null)
             {
-                Generator.OnGenerated += AssignStreetNames;
+                _generator.OnGenerated += AssignStreetNames;
             }
         }
 
         private void OnDisable()
         {
-            if (Generator != null)
+            if (_generator != null)
             {
-                Generator.OnGenerated -= AssignStreetNames;
+                _generator.OnGenerated -= AssignStreetNames;
             }
         }
 
         private void Start()
         {
-            if (Generator != null)
+            if (_generator != null)
             {
-                Vector2Int dimensions = Generator.GetGridDimensions;
+                Vector2Int dimensions = _generator.GetGridDimensions;
 
                 if (dimensions.x > 0 && dimensions.y > 0)
                 {
@@ -81,14 +83,14 @@ namespace _Project.Scripts.Gameplay.Namers
         public void AssignStreetNames()
         {
             ClearSpawnedZones();
-            cellStreetAddresses.Clear();
+            _cellStreetAddresses.Clear();
 
-            if (Generator == null || StreetNameWords == null || StreetNameWords.Count == 0)
+            if (_generator == null || _streetNameWords == null || _streetNameWords.Count == 0)
             {
                 return;
             }
 
-            Vector2Int dimensions = Generator.GetGridDimensions;
+            Vector2Int dimensions = _generator.GetGridDimensions;
             int width = dimensions.x;
             int height = dimensions.y;
 
@@ -115,7 +117,7 @@ namespace _Project.Scripts.Gameplay.Namers
 
             ShuffleWords(uniqueWords);
 
-            int layerIndex = GetSingleLayerIndex(StreetZoneLayer);
+            int layerIndex = GetSingleLayerIndex(_streetZoneLayer);
 
             for (int index = 0; index < segments.Count; index++)
             {
@@ -128,9 +130,9 @@ namespace _Project.Scripts.Gameplay.Namers
                 {
                     Vector2Int cell = segment.Cells[cellIndex];
 
-                    if (!cellStreetAddresses.ContainsKey(cell))
+                    if (!_cellStreetAddresses.ContainsKey(cell))
                     {
-                        cellStreetAddresses[cell] = fullAddress;
+                        _cellStreetAddresses[cell] = fullAddress;
                     }
                 }
 
@@ -142,9 +144,9 @@ namespace _Project.Scripts.Gameplay.Namers
 
         public void ClearSpawnedZones()
         {
-            for (int index = spawnedZones.Count - 1; index >= 0; index--)
+            for (int index = _spawnedZones.Count - 1; index >= 0; index--)
             {
-                StreetColliderZone zone = spawnedZones[index];
+                StreetColliderZone zone = _spawnedZones[index];
 
                 if (zone != null)
                 {
@@ -159,12 +161,12 @@ namespace _Project.Scripts.Gameplay.Namers
                 }
             }
 
-            spawnedZones.Clear();
+            _spawnedZones.Clear();
         }
 
         public string GetStreetAddressAtCell(Vector2Int cellCoordinates)
         {
-            if (cellStreetAddresses.TryGetValue(cellCoordinates, out string address))
+            if (_cellStreetAddresses.TryGetValue(cellCoordinates, out string address))
             {
                 return address;
             }
@@ -174,12 +176,12 @@ namespace _Project.Scripts.Gameplay.Namers
 
         public string GetStreetAddressByWorldPosition(Vector3 worldPosition)
         {
-            if (Generator == null)
+            if (_generator == null)
             {
                 return string.Empty;
             }
 
-            Vector2Int cellCoordinates = Generator.GetCellCoordinatesFromWorldPosition(worldPosition);
+            Vector2Int cellCoordinates = _generator.GetCellCoordinatesFromWorldPosition(worldPosition);
             return GetStreetAddressAtCell(cellCoordinates);
         }
 
@@ -272,7 +274,7 @@ namespace _Project.Scripts.Gameplay.Namers
                         continue;
                     }
 
-                    CityBlockPreset preset = Generator.GetSpawnedPresetAt(columnIndex, rowIndex);
+                    CityBlockPreset preset = _generator.GetSpawnedPresetAt(columnIndex, rowIndex);
 
                     if (preset == null || preset.RoadCount == 0)
                     {
@@ -299,7 +301,7 @@ namespace _Project.Scripts.Gameplay.Namers
                     touchesBorder = true;
                 }
 
-                CityBlockPreset preset = Generator.GetSpawnedPresetAt(cell.x, cell.y);
+                CityBlockPreset preset = _generator.GetSpawnedPresetAt(cell.x, cell.y);
 
                 if (preset != null && preset.RoadCount >= 3)
                 {
@@ -348,13 +350,13 @@ namespace _Project.Scripts.Gameplay.Namers
             Vector2Int firstCell = segment.Cells[0];
             Vector2Int lastCell = segment.Cells[segment.Cells.Count - 1];
 
-            Vector3 firstWorldPosition = Generator.GetWorldPositionFromCellCoordinates(firstCell.x, firstCell.y);
-            Vector3 lastWorldPosition = Generator.GetWorldPositionFromCellCoordinates(lastCell.x, lastCell.y);
+            Vector3 firstWorldPosition = _generator.GetWorldPositionFromCellCoordinates(firstCell.x, firstCell.y);
+            Vector3 lastWorldPosition = _generator.GetWorldPositionFromCellCoordinates(lastCell.x, lastCell.y);
 
             Vector3 centerPosition = (firstWorldPosition + lastWorldPosition) * 0.5f;
             centerPosition.y += COLLIDER_Y_OFFSET;
 
-            float cellSize = Generator.CellSize;
+            float cellSize = _generator.CellSize;
             float totalLength = segment.Cells.Count * cellSize;
             float roadWidth = cellSize * ROAD_WIDTH_RATIO;
 
@@ -369,9 +371,9 @@ namespace _Project.Scripts.Gameplay.Namers
             zoneObject.layer = layerIndex;
 
             StreetColliderZone colliderZone = zoneObject.AddComponent<StreetColliderZone>();
-            colliderZone.Initialize(fullAddress, worldSize, StreetHighlightMaterial);
+            colliderZone.Initialize(fullAddress, worldSize, _streetHighlightMaterial);
 
-            spawnedZones.Add(colliderZone);
+            _spawnedZones.Add(colliderZone);
         }
 
         private void FillRemainingRoadCellsFromNeighbors(int width, int height)
@@ -390,12 +392,12 @@ namespace _Project.Scripts.Gameplay.Namers
                 {
                     Vector2Int cell = new Vector2Int(columnIndex, rowIndex);
 
-                    if (cellStreetAddresses.ContainsKey(cell))
+                    if (_cellStreetAddresses.ContainsKey(cell))
                     {
                         continue;
                     }
 
-                    CityBlockPreset preset = Generator.GetSpawnedPresetAt(columnIndex, rowIndex);
+                    CityBlockPreset preset = _generator.GetSpawnedPresetAt(columnIndex, rowIndex);
 
                     if (preset == null || preset.RoadCount == 0)
                     {
@@ -406,9 +408,9 @@ namespace _Project.Scripts.Gameplay.Namers
                     {
                         Vector2Int neighbor = cell + offsets[dirIndex];
 
-                        if (cellStreetAddresses.TryGetValue(neighbor, out string neighborAddress))
+                        if (_cellStreetAddresses.TryGetValue(neighbor, out string neighborAddress))
                         {
-                            cellStreetAddresses[cell] = neighborAddress;
+                            _cellStreetAddresses[cell] = neighborAddress;
                             break;
                         }
                     }
@@ -418,14 +420,14 @@ namespace _Project.Scripts.Gameplay.Namers
 
         private bool HasHorizontalRoad(int columnIndex, int rowIndex)
         {
-            CityBlockPreset preset = Generator.GetSpawnedPresetAt(columnIndex, rowIndex);
+            CityBlockPreset preset = _generator.GetSpawnedPresetAt(columnIndex, rowIndex);
 
             if (preset == null || preset.RoadCount == 0)
             {
                 return false;
             }
 
-            int rotationSteps = Generator.GetSpawnedRotationAt(columnIndex, rowIndex);
+            int rotationSteps = _generator.GetSpawnedRotationAt(columnIndex, rowIndex);
             bool hasEast = preset.HasRoad(Direction.East, rotationSteps);
             bool hasWest = preset.HasRoad(Direction.West, rotationSteps);
 
@@ -434,14 +436,14 @@ namespace _Project.Scripts.Gameplay.Namers
 
         private bool HasVerticalRoad(int columnIndex, int rowIndex)
         {
-            CityBlockPreset preset = Generator.GetSpawnedPresetAt(columnIndex, rowIndex);
+            CityBlockPreset preset = _generator.GetSpawnedPresetAt(columnIndex, rowIndex);
 
             if (preset == null || preset.RoadCount == 0)
             {
                 return false;
             }
 
-            int rotationSteps = Generator.GetSpawnedRotationAt(columnIndex, rowIndex);
+            int rotationSteps = _generator.GetSpawnedRotationAt(columnIndex, rowIndex);
             bool hasNorth = preset.HasRoad(Direction.North, rotationSteps);
             bool hasSouth = preset.HasRoad(Direction.South, rotationSteps);
 
@@ -453,9 +455,9 @@ namespace _Project.Scripts.Gameplay.Namers
             HashSet<string> uniqueSet = new HashSet<string>();
             List<string> result = new List<string>();
 
-            for (int index = 0; index < StreetNameWords.Count; index++)
+            for (int index = 0; index < _streetNameWords.Count; index++)
             {
-                string word = StreetNameWords[index];
+                string word = _streetNameWords[index];
 
                 if (string.IsNullOrWhiteSpace(word))
                 {
@@ -477,7 +479,7 @@ namespace _Project.Scripts.Gameplay.Namers
         {
             for (int index = words.Count - 1; index > 0; index--)
             {
-                int randomIndex = Random.Range(0, index + 1);
+                int randomIndex = UnityEngine.Random.Range(0, index + 1);
                 string temp = words[index];
                 words[index] = words[randomIndex];
                 words[randomIndex] = temp;

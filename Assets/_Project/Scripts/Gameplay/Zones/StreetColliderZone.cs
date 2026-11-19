@@ -12,10 +12,10 @@ namespace _Project.Scripts.Gameplay.Zones
         private const float CUBE_HEIGHT_SCALE = 0.05f;
         private const float CUBE_Y_OFFSET = 0.03f;
 
-        private BoxCollider zoneCollider;
-        private MeshFilter highlightMeshFilter;
-        private MeshRenderer highlightMeshRenderer;
-        private Material highlightMaterial;
+        private BoxCollider _zoneCollider;
+        private MeshFilter _highlightMeshFilter;
+        private MeshRenderer _highlightMeshRenderer;
+        private Material _highlightMaterial;
 
         public string StreetAddress { get; private set; }
 
@@ -28,15 +28,15 @@ namespace _Project.Scripts.Gameplay.Zones
         {
             StreetAddress = streetAddress;
 
-            highlightMaterial = assignedHighlightMaterial;
+            _highlightMaterial = assignedHighlightMaterial;
 
             CacheComponents();
 
-            zoneCollider.isTrigger = true;
+            _zoneCollider.isTrigger = true;
 
-            zoneCollider.center = Vector3.zero;
+            _zoneCollider.center = Vector3.zero;
 
-            zoneCollider.size = colliderSize;
+            _zoneCollider.size = colliderSize;
 
             float cubeWidth = colliderSize.x;
 
@@ -44,15 +44,15 @@ namespace _Project.Scripts.Gameplay.Zones
 
             float cubeHeight = colliderSize.y * CUBE_HEIGHT_SCALE;
 
-            highlightMeshFilter.sharedMesh = CreateCubeMesh(cubeWidth, cubeHeight, cubeLength);
+            _highlightMeshFilter.sharedMesh = CreateCubeMesh(cubeWidth, cubeHeight, cubeLength);
 
-            highlightMeshRenderer.sharedMaterial = highlightMaterial;
+            _highlightMeshRenderer.sharedMaterial = _highlightMaterial;
 
-            highlightMeshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            _highlightMeshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
-            highlightMeshRenderer.receiveShadows = false;
+            _highlightMeshRenderer.receiveShadows = false;
 
-            highlightMeshRenderer.enabled = false;
+            _highlightMeshRenderer.enabled = false;
         }
 
         public void Initialize(string streetAddress, bool isHorizontal, float length, Material assignedHighlightMaterial)
@@ -71,38 +71,38 @@ namespace _Project.Scripts.Gameplay.Zones
 
         public void SetHighlighted(bool isHighlighted)
         {
-            if (highlightMeshRenderer == null)
+            if (_highlightMeshRenderer == null)
             {
                 return;
             }
 
-            if (isHighlighted && highlightMaterial != null)
+            if (isHighlighted && _highlightMaterial != null)
             {
-                highlightMeshRenderer.sharedMaterial = highlightMaterial;
+                _highlightMeshRenderer.sharedMaterial = _highlightMaterial;
 
-                highlightMeshRenderer.enabled = true;
+                _highlightMeshRenderer.enabled = true;
             }
             else
             {
-                highlightMeshRenderer.enabled = false;
+                _highlightMeshRenderer.enabled = false;
             }
         }
 
         private void CacheComponents()
         {
-            if (zoneCollider == null)
+            if (_zoneCollider == null)
             {
-                zoneCollider = GetComponent<BoxCollider>();
+                _zoneCollider = GetComponent<BoxCollider>();
             }
 
-            if (highlightMeshFilter == null)
+            if (_highlightMeshFilter == null)
             {
-                highlightMeshFilter = GetComponent<MeshFilter>();
+                _highlightMeshFilter = GetComponent<MeshFilter>();
             }
 
-            if (highlightMeshRenderer == null)
+            if (_highlightMeshRenderer == null)
             {
-                highlightMeshRenderer = GetComponent<MeshRenderer>();
+                _highlightMeshRenderer = GetComponent<MeshRenderer>();
             }
         }
 

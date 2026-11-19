@@ -347,13 +347,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 521716142}
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!114 &410087042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -518,11 +518,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a78cbb9bc345ea241bd20490236a7e0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.CityNavMeshBaker
-  <Generator>k__BackingField: {fileID: 1820358568}
-  <Surface>k__BackingField: {fileID: 1060815911}
-  <IncludedLayers>k__BackingField:
+  _generator: {fileID: 1820358568}
+  _surface: {fileID: 1060815911}
+  _includedLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 4294967295
 --- !u!114 &1060815911
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -678,6 +678,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbca8ff2bc7a639478ad820f7f11e50f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.InputHandler
+  _reader: {fileID: 0}
 --- !u!1 &1690320205
 GameObject:
   m_ObjectHideFlags: 0
@@ -831,13 +832,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3d3894d6b1009342a144a711943d421, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.StreetView
-  <InputHandler>k__BackingField: {fileID: 0}
-  <TargetCamera>k__BackingField: {fileID: 330585545}
-  <StreetNameText>k__BackingField: {fileID: 1753180869}
-  <StreetZoneLayer>k__BackingField:
+  _inputHandler: {fileID: 0}
+  _targetCamera: {fileID: 0}
+  _streetNameText: {fileID: 0}
+  _streetZoneLayer:
     serializedVersion: 2
-    m_Bits: 8
-  <EmptyStreetFallbackText>k__BackingField: 
+    m_Bits: 4294967295
+  _emptyStreetFallbackText: 
 --- !u!114 &1753180869
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -983,20 +984,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ce8b5f13b80cd64f81216e7f1f371a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.RoutePlannerController
-  <MainCamera>k__BackingField: {fileID: 330585545}
-  <Generator>k__BackingField: {fileID: 1820358568}
-  <PlayerInputHandler>k__BackingField: {fileID: 1571219425}
-  <PointANode>k__BackingField: {fileID: 6039814950563009968, guid: 48faf687e8b98b84391b4cead4599611, type: 3}
-  <PointBNode>k__BackingField: {fileID: 6039814950563009968, guid: aa514db90e7eea64a905bcd473cf13eb, type: 3}
-  <VehicleDriver>k__BackingField: {fileID: 6812307582934679136, guid: 5e604044833ac334f9959ef81483a586, type: 3}
-  <RouteLineRenderer>k__BackingField: {fileID: 1793351552}
-  <RoadClickLayers>k__BackingField:
+  _mainCamera: {fileID: 330585545}
+  _generator: {fileID: 1820358568}
+  _playerInputHandler: {fileID: 1571219425}
+  _pointANode: {fileID: 0}
+  _pointBNode: {fileID: 0}
+  _vehicleDriver: {fileID: 0}
+  _routeLineRenderer: {fileID: 1793351552}
+  _roadClickLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  <MaxRaycastDistance>k__BackingField: 1000
-  <RoadSnapRadius>k__BackingField: 5
-  <LineHeight>k__BackingField: 0.25
-  <AutoStartVehicleOnComplete>k__BackingField: 1
+  _maxRaycastDistance: 1000
+  _roadSnapRadius: 5
+  _lineHeight: 0.25
+  _lineEraseOffset: 1.5
+  _lineSegmentLength: 0.5
+  _autoStartVehicleOnComplete: 1
+  _maxTrips: 5
 --- !u!120 &1793351552
 LineRenderer:
   serializedVersion: 3
@@ -1136,17 +1140,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 736a0be7fe247f443861021d60abf6b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CityGenerator
-  <Size>k__BackingField: {x: 5, y: 10}
-  <CellSize>k__BackingField: 10
-  <GenerateOnStart>k__BackingField: 1
-  <RoadPresets>k__BackingField:
+  _size: {x: 5, y: 10}
+  _cellSize: 9
+  _generateOnStart: 1
+  _roadPresets:
   - {fileID: 4140962260670664931, guid: 7b59045b9b1484a4fbd8afbf20af8667, type: 3}
   - {fileID: 4140962260670664931, guid: abbd1142c13606241a6401187fe8d69c, type: 3}
   - {fileID: 4140962260670664931, guid: 3a56d6f63a1c2b24a8858619e346f511, type: 3}
   - {fileID: 4140962260670664931, guid: 4d7b9f522b3edae4e8eab7076d428e17, type: 3}
-  - {fileID: 4140962260670664931, guid: f68968ed86035674085462a1bfa98d3b, type: 3}
-  <EmptyPresets>k__BackingField:
-  - {fileID: 4140962260670664931, guid: d3091de0e4c48854fb02a4ef0da06b47, type: 3}
+  - {fileID: 4140962260670664931, guid: 86688c9cfc945064e95e96edacc462ce, type: 3}
+  _emptyPresets:
+  - {fileID: 4140962260670664931, guid: a49b3a9f4013a0b4e8ab936789b6e54e, type: 3}
 --- !u!4 &1820358569
 Transform:
   m_ObjectHideFlags: 0
@@ -1206,14 +1210,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b993ab037e4d57c4987a2b7709a1741c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.DeliveryRouteSpawner
-  <Generator>k__BackingField: {fileID: 1820358568}
-  <NavMeshBaker>k__BackingField: {fileID: 1060815910}
-  <StreetNamer>k__BackingField: {fileID: 2135025615}
-  <RoutePlanner>k__BackingField: {fileID: 1793351551}
-  <PointAPrefab>k__BackingField: {fileID: 6039814950563009968, guid: 48faf687e8b98b84391b4cead4599611, type: 3}
-  <PointBPrefab>k__BackingField: {fileID: 6039814950563009968, guid: aa514db90e7eea64a905bcd473cf13eb, type: 3}
-  <VehiclePrefab>k__BackingField: {fileID: 6812307582934679136, guid: 5e604044833ac334f9959ef81483a586, type: 3}
-  <MinimumDistanceInCells>k__BackingField: 10
+  _generator: {fileID: 1820358568}
+  _navMeshBaker: {fileID: 1060815910}
+  _streetNamer: {fileID: 2135025615}
+  _routePlanner: {fileID: 1793351551}
+  _pointAPrefab: {fileID: 6039814950563009968, guid: 48faf687e8b98b84391b4cead4599611, type: 3}
+  _pointBPrefab: {fileID: 6039814950563009968, guid: aa514db90e7eea64a905bcd473cf13eb, type: 3}
+  _vehiclePrefab: {fileID: 6812307582934679136, guid: 5e604044833ac334f9959ef81483a586, type: 3}
+  _minimumDistanceInCells: 5
 --- !u!1 &2135025614
 GameObject:
   m_ObjectHideFlags: 0
@@ -1243,26 +1247,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 496e1b6bd35d21f4aa321229aebc63dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.CityStreetNamer
-  <Generator>k__BackingField: {fileID: 1820358568}
-  <StreetZoneLayer>k__BackingField:
+  _generator: {fileID: 1820358568}
+  _streetZoneLayer:
     serializedVersion: 2
     m_Bits: 8
-  <StreetHighlightMaterial>k__BackingField: {fileID: 2100000, guid: b571396acd3fdcd419eaeefc69cb5bec, type: 2}
-  <StreetNameWords>k__BackingField:
-  - "\u0413\u0440\u0430\u0431\u043E\u0432\u0441\u043A\u043E\u0433\u043E"
-  - "\u041A\u043E\u0442\u043E\u0432\u0441\u043A\u043E\u0433\u043E"
-  - "\u0413\u0440\u0443\u0448"
-  - "\u0413\u043E\u0440"
-  - "\u041F\u0443\u0448\u043A\u0438\u043D\u0430"
-  - "\u0420\u043E\u0437"
-  - "\u041F\u043E\u0431\u0435\u0434\u044B"
-  - "\u042D\u043D\u0435\u0440\u0433\u0435\u0442\u0438\u043A\u043E\u0432"
-  - "\u0413\u0435\u043E\u043B\u043E\u0433\u043E\u0432"
+  _streetHighlightMaterial: {fileID: 2100000, guid: b571396acd3fdcd419eaeefc69cb5bec, type: 2}
+  _streetNameWords:
   - "\u041C\u0438\u0440\u0430"
-  - "\u0421\u043B\u0430\u0432\u044B"
+  - "\u041B\u0435\u0441\u043D\u0430\u044F"
+  - "\u0421\u043E\u0432\u0435\u0442\u0441\u043A\u0430\u044F"
+  - "\u0426\u0435\u043D\u0442\u0440\u0430\u043B\u044C\u043D\u0430\u044F"
+  - "\u041F\u043E\u0431\u0435\u0434\u044B"
+  - "\u041C\u043E\u043B\u043E\u0434\u0451\u0436\u043D\u0430\u044F"
+  - "\u0421\u0430\u0434\u043E\u0432\u0430\u044F"
+  - "\u0428\u043A\u043E\u043B\u044C\u043D\u0430\u044F"
+  - "\u041D\u043E\u0432\u0430\u044F"
+  - "\u041D\u0430\u0431\u0435\u0440\u0435\u0436\u043D\u0430\u044F"
+  - "\u0417\u0435\u043B\u0451\u043D\u0430\u044F"
+  - "\u0420\u0435\u0447\u043D\u0430\u044F"
+  - "\u0413\u0430\u0433\u0430\u0440\u0438\u043D\u0430"
+  - "\u041F\u0443\u0448\u043A\u0438\u043D\u0430"
+  - "\u041B\u0435\u0440\u043C\u043E\u043D\u0442\u043E\u0432\u0430"
+  - "\u0421\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u0435\u0439"
+  - "\u041F\u0430\u0440\u043A\u043E\u0432\u0430\u044F"
+  - "\u0421\u043E\u043B\u043D\u0435\u0447\u043D\u0430\u044F"
   - "\u042E\u043D\u043E\u0441\u0442\u0438"
-  - "\u0420\u0435\u0441\u043F\u0443\u0431\u043B\u0438\u043A\u0438"
-  - "\u0421\u0432\u0435\u0442\u0430"
+  - "\u0413\u0435\u043E\u043B\u043E\u0433\u043E\u0432"
 --- !u!4 &2135025616
 Transform:
   m_ObjectHideFlags: 0

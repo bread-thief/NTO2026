@@ -9,6 +9,7 @@ namespace _Project.Scripts.Gameplay.Readers
     {
         public event Action MiddlePressed = delegate { };
         public event Action PrimaryPressed = delegate { };
+        public event Action PrimaryReleased = delegate { };
         public event Action SecondaryPressed = delegate { };
         public event Action<Vector2> PositionAction = delegate { };
 
@@ -46,6 +47,10 @@ namespace _Project.Scripts.Gameplay.Readers
             if (context.performed)
             {
                 PrimaryPressed?.Invoke();
+            }
+            else if (context.canceled)
+            {
+                PrimaryReleased?.Invoke();
             }
         }
 

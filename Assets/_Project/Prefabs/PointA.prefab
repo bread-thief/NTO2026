@@ -45,9 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a4356ecbd158214fafb998b3a20d21c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.DeliveryRouteNode
-  <IsDestinationNode>k__BackingField: 0
-  <SampleRadius>k__BackingField: 12
-  <MarkerObject>k__BackingField: {fileID: 8161574186357195302}
+  _isDestinationNode: 0
+  _sampleRadius: 12
+  _markerObject: {fileID: 8161574186357195302}
 --- !u!1 &8161574186357195302
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using _Project.Scripts.Gameplay.Readers;
 
 namespace _Project.Scripts.Gameplay.Handlers
@@ -10,12 +9,13 @@ namespace _Project.Scripts.Gameplay.Handlers
         [SerializeField] private InputReader _reader;
 
         public event Action<Vector2> OnPrimaryPressed;
+        public event Action<Vector2> OnPrimaryReleased;
         public event Action<Vector2> OnSecondaryPressed;
         public event Action<Vector2> OnMiddlePressed;
 
-        private Vector2 pointerScreenPosition;
+        private Vector2 _pointerScreenPosition;
 
-        public Vector2 PointerScreenPosition => pointerScreenPosition;
+        public Vector2 PointerScreenPosition => _pointerScreenPosition;
 
         private void Awake()
         {
@@ -31,6 +31,7 @@ namespace _Project.Scripts.Gameplay.Handlers
             {
                 _reader.PositionAction += HandlePosition;
                 _reader.PrimaryPressed += HandlePrimary;
+                _reader.PrimaryReleased += HandlePrimaryRelease;
                 _reader.SecondaryPressed += HandleSecondary;
                 _reader.MiddlePressed += HandleMiddle;
             }
@@ -42,6 +43,7 @@ namespace _Project.Scripts.Gameplay.Handlers
             {
                 _reader.PositionAction -= HandlePosition;
                 _reader.PrimaryPressed -= HandlePrimary;
+                _reader.PrimaryReleased -= HandlePrimaryRelease;
                 _reader.SecondaryPressed -= HandleSecondary;
                 _reader.MiddlePressed -= HandleMiddle;
             }
@@ -49,22 +51,27 @@ namespace _Project.Scripts.Gameplay.Handlers
 
         private void HandlePosition(Vector2 position)
         {
-            pointerScreenPosition = position;
+            _pointerScreenPosition = position;
         }
 
         private void HandlePrimary()
         {
-            OnPrimaryPressed?.Invoke(pointerScreenPosition);
+            OnPrimaryPressed?.Invoke(_pointerScreenPosition);
+        }
+
+        private void HandlePrimaryRelease()
+        {
+            OnPrimaryReleased?.Invoke(_pointerScreenPosition);
         }
 
         private void HandleSecondary()
         {
-            OnSecondaryPressed?.Invoke(pointerScreenPosition);
+            OnSecondaryPressed?.Invoke(_pointerScreenPosition);
         }
 
         private void HandleMiddle()
         {
-            OnMiddlePressed?.Invoke(pointerScreenPosition);
+            OnMiddlePressed?.Invoke(_pointerScreenPosition);
         }
     }
 }

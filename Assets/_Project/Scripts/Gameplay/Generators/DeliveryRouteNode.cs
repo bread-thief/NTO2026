@@ -9,18 +9,19 @@ namespace _Project.Scripts.Gameplay.Generators
         private const int INVALID_AREA_INDEX = -1;
         private const float DEFAULT_SAMPLE_RADIUS = 12f;
 
-        [field: SerializeField] public bool IsDestinationNode { get; private set; }
-        [field: SerializeField] public float SampleRadius { get; private set; } = DEFAULT_SAMPLE_RADIUS;
-        [field: SerializeField] public GameObject MarkerObject { get; private set; }
+        [SerializeField] private bool _isDestinationNode;
+        [SerializeField] private float _sampleRadius = DEFAULT_SAMPLE_RADIUS;
+        [SerializeField] private GameObject _markerObject;
 
+        public bool IsDestinationNode => _isDestinationNode;
         public Vector3 RoadNavMeshPosition { get; private set; }
         public bool HasValidNavMeshPosition { get; private set; }
 
         private void Awake()
         {
-            if (MarkerObject == null)
+            if (_markerObject == null)
             {
-                MarkerObject = gameObject;
+                _markerObject = gameObject;
             }
 
             SnapToRoadNavMesh();
@@ -34,7 +35,7 @@ namespace _Project.Scripts.Gameplay.Generators
         public bool SnapToRoadNavMesh(Vector3 targetWorldPosition)
         {
             int roadAreaMask = ResolveRoadAreaMask();
-            float searchRadius = Mathf.Max(1f, SampleRadius);
+            float searchRadius = Mathf.Max(1f, _sampleRadius);
 
             if (NavMesh.SamplePosition(targetWorldPosition, out NavMeshHit roadHit, searchRadius, roadAreaMask))
             {
@@ -60,12 +61,12 @@ namespace _Project.Scripts.Gameplay.Generators
 
         public void SetMarkerActive(bool isActive)
         {
-            if (MarkerObject == null)
+            if (_markerObject == null)
             {
                 return;
             }
 
-            MarkerObject.SetActive(isActive);
+            _markerObject.SetActive(isActive);
         }
 
         private int ResolveRoadAreaMask()

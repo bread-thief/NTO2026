@@ -12,9 +12,9 @@ namespace _Project.Scripts.Gameplay.Bakers
         private const int INVALID_AREA_INDEX = -1;
         private const int WALKABLE_AREA_INDEX = 0;
 
-        [field: SerializeField] public CityGenerator Generator { get; private set; }
-        [field: SerializeField] public NavMeshSurface Surface { get; private set; }
-        [field: SerializeField] public LayerMask IncludedLayers { get; private set; } = ~0;
+        [SerializeField] private CityGenerator _generator;
+        [SerializeField] private NavMeshSurface _surface;
+        [SerializeField] private LayerMask _includedLayers = ~0;
 
         public event Action OnNavMeshBaked;
 
@@ -29,23 +29,23 @@ namespace _Project.Scripts.Gameplay.Bakers
         {
             ResolveReferences();
 
-            if (Generator != null)
+            if (_generator != null)
             {
-                Generator.OnGenerated += HandleCityGenerated;
+                _generator.OnGenerated += HandleCityGenerated;
             }
         }
 
         private void OnDisable()
         {
-            if (Generator != null)
+            if (_generator != null)
             {
-                Generator.OnGenerated -= HandleCityGenerated;
+                _generator.OnGenerated -= HandleCityGenerated;
             }
         }
 
         private void Start()
         {
-            if (!IsNavMeshBaked && Generator != null && Generator.transform.childCount > 0)
+            if (!IsNavMeshBaked && _generator != null && _generator.transform.childCount > 0)
             {
                 BakeRoadNavMesh();
             }
@@ -56,32 +56,32 @@ namespace _Project.Scripts.Gameplay.Bakers
         {
             ResolveReferences();
 
-            if (Surface == null)
+            if (_surface == null)
             {
                 return;
             }
 
             int roadAreaIndex = ResolveRoadAreaIndex();
 
-            Surface.layerMask = IncludedLayers;
-            Surface.defaultArea = roadAreaIndex;
+            _surface.layerMask = _includedLayers;
+            _surface.defaultArea = roadAreaIndex;
 
-            if (Generator != null && Surface.gameObject != Generator.gameObject)
+            if (_generator != null && _surface.gameObject != _generator.gameObject)
             {
-                Surface.collectObjects = CollectObjects.All;
+                _surface.collectObjects = CollectObjects.All;
             }
 
-            if (Generator != null)
+            if (_generator != null)
             {
-                ConfigureNavMeshModifiers(Generator.transform, roadAreaIndex);
+                ConfigureNavMeshModifiers(_generator.transform, roadAreaIndex);
 
-                if (Surface.useGeometry == NavMeshCollectGeometry.PhysicsColliders && !HasAnyRoadCollider(Generator.transform))
+                if (_surface.useGeometry == NavMeshCollectGeometry.PhysicsColliders && !HasAnyRoadCollider(_generator.transform))
                 {
-                    Surface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
+                    _surface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
                 }
             }
 
-            Surface.BuildNavMesh();
+            _surface.BuildNavMesh();
 
             IsNavMeshBaked = true;
             OnNavMeshBaked?.Invoke();
@@ -95,23 +95,23 @@ namespace _Project.Scripts.Gameplay.Bakers
 
         private void ResolveReferences()
         {
-            if (Generator == null)
+            if (_generator == null)
             {
-                Generator = GetComponent<CityGenerator>();
+                _generator = GetComponent<CityGenerator>();
 
-                if (Generator == null)
+                if (_generator == null)
                 {
-                    Generator = FindAnyObjectByType<CityGenerator>();
+                    _generator = FindAnyObjectByType<CityGenerator>();
                 }
             }
 
-            if (Surface == null)
+            if (_surface == null)
             {
-                Surface = GetComponent<NavMeshSurface>();
+                _surface = GetComponent<NavMeshSurface>();
 
-                if (Surface == null)
+                if (_surface == null)
                 {
-                    Surface = FindAnyObjectByType<NavMeshSurface>();
+                    _surface = FindAnyObjectByType<NavMeshSurface>();
                 }
             }
         }

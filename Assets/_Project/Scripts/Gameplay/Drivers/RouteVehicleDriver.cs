@@ -19,56 +19,54 @@ namespace _Project.Scripts.Gameplay.Drivers
         private const float MIN_MOVEMENT_THRESHOLD = 0.01f;
         private const float STUCK_TIME_THRESHOLD = 1.5f;
 
-        [field: SerializeField] public NavMeshAgent VehicleAgent { get; private set; }
-        [field: SerializeField] public float WaypointReachDistance { get; private set; } = WAYPOINT_REACH_THRESHOLD;
-        [field: SerializeField] public float FinalDestinationDistance { get; private set; } = FINAL_DESTINATION_THRESHOLD;
-        [field: SerializeField] public float VehicleAngularSpeed { get; private set; } = DEFAULT_TURN_SPEED;
-        [field: SerializeField] public float VehicleAcceleration { get; private set; } = DEFAULT_ACCELERATION;
-        [field: SerializeField] public float VehicleSpeed { get; private set; } = DEFAULT_VEHICLE_SPEED;
+        [SerializeField] private NavMeshAgent _vehicleAgent;
+        [SerializeField] private float _waypointReachDistance = WAYPOINT_REACH_THRESHOLD;
+        [SerializeField] private float _finalDestinationDistance = FINAL_DESTINATION_THRESHOLD;
+        [SerializeField] private float _vehicleAngularSpeed = DEFAULT_TURN_SPEED;
+        [SerializeField] private float _vehicleAcceleration = DEFAULT_ACCELERATION;
+        [SerializeField] private float _vehicleSpeed = DEFAULT_VEHICLE_SPEED;
 
         public event Action OnDestinationReached;
         public event Action<int> OnWaypointReached;
 
-        public bool IsDriving => isDriving;
-
-        public int CurrentWaypointIndex => currentWaypointIndex;
-
-        public int TotalWaypointCount => activeWaypoints.Count;
+        public bool IsDriving => _isDriving;
+        public int CurrentWaypointIndex => _currentWaypointIndex;
+        public int TotalWaypointCount => _activeWaypoints.Count;
 
         public Vector3 CurrentTargetPosition
         {
             get
             {
-                if (activeWaypoints.Count == 0 || currentWaypointIndex >= activeWaypoints.Count)
+                if (_activeWaypoints.Count == 0 || _currentWaypointIndex >= _activeWaypoints.Count)
                 {
                     return transform.position;
                 }
 
-                return activeWaypoints[currentWaypointIndex];
+                return _activeWaypoints[_currentWaypointIndex];
             }
         }
 
-        private readonly List<Vector3> activeWaypoints = new List<Vector3>();
-        private int currentWaypointIndex;
-        private bool isDriving;
-        private float stuckTimer;
-        private Vector3 lastPosition;
+        private readonly List<Vector3> _activeWaypoints = new List<Vector3>();
+        private int _currentWaypointIndex;
+        private bool _isDriving;
+        private float _stuckTimer;
+        private Vector3 _lastPosition;
 
         private void Awake()
         {
-            if (VehicleAgent == null)
+            if (_vehicleAgent == null)
             {
-                VehicleAgent = GetComponent<NavMeshAgent>();
+                _vehicleAgent = GetComponent<NavMeshAgent>();
             }
 
-            lastPosition = transform.position;
+            _lastPosition = transform.position;
             ConfigureRoadOnlyAreaMask();
             ConfigureSmoothCornering();
         }
 
         private void Update()
         {
-            if (!isDriving || VehicleAgent == null || activeWaypoints.Count == 0)
+            if (!_isDriving || _vehicleAgent == null || _activeWaypoints.Count == 0)
             {
                 return;
             }
@@ -78,22 +76,22 @@ namespace _Project.Scripts.Gameplay.Drivers
                 return;
             }
 
-            if (VehicleAgent.pathPending)
+            if (_vehicleAgent.pathPending)
             {
                 return;
             }
 
             UpdateStuckDetection();
 
-            bool isLastWaypoint = currentWaypointIndex >= activeWaypoints.Count - 1;
-            float requiredDistance = isLastWaypoint ? FinalDestinationDistance : WaypointReachDistance;
+            bool isLastWaypoint = _currentWaypointIndex >= _activeWaypoints.Count - 1;
+            float requiredDistance = isLastWaypoint ? _finalDestinationDistance : _waypointReachDistance;
 
-            Vector3 currentTarget = activeWaypoints[currentWaypointIndex];
+            Vector3 currentTarget = _activeWaypoints[_currentWaypointIndex];
             Vector3 flatVehiclePosition = new Vector3(transform.position.x, 0f, transform.position.z);
             Vector3 flatTargetPosition = new Vector3(currentTarget.x, 0f, currentTarget.z);
             float horizontalDistance = Vector3.Distance(flatVehiclePosition, flatTargetPosition);
 
-            if (horizontalDistance <= requiredDistance || VehicleAgent.remainingDistance <= requiredDistance)
+            if (horizontalDistance <= requiredDistance || _vehicleAgent.remainingDistance <= requiredDistance)
             {
                 AdvanceToNextWaypoint();
             }
@@ -101,12 +99,12 @@ namespace _Project.Scripts.Gameplay.Drivers
 
         public void ConfigureRoadOnlyAreaMask()
         {
-            if (VehicleAgent == null)
+            if (_vehicleAgent == null)
             {
-                VehicleAgent = GetComponent<NavMeshAgent>();
+                _vehicleAgent = GetComponent<NavMeshAgent>();
             }
 
-            if (VehicleAgent == null)
+            if (_vehicleAgent == null)
             {
                 return;
             }
@@ -115,11 +113,11 @@ namespace _Project.Scripts.Gameplay.Drivers
 
             if (roadAreaIndex != INVALID_AREA_INDEX)
             {
-                VehicleAgent.areaMask = 1 << roadAreaIndex;
+                _vehicleAgent.areaMask = 1 << roadAreaIndex;
             }
             else
             {
-                VehicleAgent.areaMask = NavMesh.AllAreas;
+                _vehicleAgent.areaMask = NavMesh.AllAreas;
             }
         }
 
@@ -135,12 +133,12 @@ namespace _Project.Scripts.Gameplay.Drivers
                 return;
             }
 
-            if (VehicleAgent == null)
+            if (_vehicleAgent == null)
             {
-                VehicleAgent = GetComponent<NavMeshAgent>();
+                _vehicleAgent = GetComponent<NavMeshAgent>();
             }
 
-            if (VehicleAgent == null)
+            if (_vehicleAgent == null)
             {
                 return;
             }
@@ -153,110 +151,110 @@ namespace _Project.Scripts.Gameplay.Drivers
                 return;
             }
 
-            activeWaypoints.Clear();
+            _activeWaypoints.Clear();
 
             for (int index = 0; index < waypoints.Count; index++)
             {
-                activeWaypoints.Add(waypoints[index]);
+                _activeWaypoints.Add(waypoints[index]);
             }
 
-            currentWaypointIndex = 1;
-            isDriving = true;
-            stuckTimer = 0f;
-            lastPosition = transform.position;
+            _currentWaypointIndex = 1;
+            _isDriving = true;
+            _stuckTimer = 0f;
+            _lastPosition = transform.position;
 
-            VehicleAgent.speed = VehicleSpeed;
-            VehicleAgent.isStopped = false;
-            VehicleAgent.SetDestination(activeWaypoints[currentWaypointIndex]);
+            _vehicleAgent.speed = _vehicleSpeed;
+            _vehicleAgent.isStopped = false;
+            _vehicleAgent.SetDestination(_activeWaypoints[_currentWaypointIndex]);
         }
 
         public void StopAndReset()
         {
-            isDriving = false;
-            activeWaypoints.Clear();
-            currentWaypointIndex = 0;
-            stuckTimer = 0f;
+            _isDriving = false;
+            _activeWaypoints.Clear();
+            _currentWaypointIndex = 0;
+            _stuckTimer = 0f;
 
-            if (VehicleAgent != null && VehicleAgent.isActiveAndEnabled && VehicleAgent.isOnNavMesh)
+            if (_vehicleAgent != null && _vehicleAgent.isActiveAndEnabled && _vehicleAgent.isOnNavMesh)
             {
-                VehicleAgent.isStopped = true;
-                VehicleAgent.ResetPath();
+                _vehicleAgent.isStopped = true;
+                _vehicleAgent.ResetPath();
             }
         }
 
         public void StopAndReset(Vector3 resetWorldPosition)
         {
-            isDriving = false;
-            activeWaypoints.Clear();
-            currentWaypointIndex = 0;
-            stuckTimer = 0f;
+            _isDriving = false;
+            _activeWaypoints.Clear();
+            _currentWaypointIndex = 0;
+            _stuckTimer = 0f;
 
-            if (VehicleAgent == null)
+            if (_vehicleAgent == null)
             {
-                VehicleAgent = GetComponent<NavMeshAgent>();
+                _vehicleAgent = GetComponent<NavMeshAgent>();
             }
 
-            if (VehicleAgent != null && EnsureAgentIsPlacedOnNavMesh(resetWorldPosition))
+            if (_vehicleAgent != null && EnsureAgentIsPlacedOnNavMesh(resetWorldPosition))
             {
-                VehicleAgent.isStopped = true;
-                VehicleAgent.ResetPath();
-                VehicleAgent.Warp(resetWorldPosition);
+                _vehicleAgent.isStopped = true;
+                _vehicleAgent.ResetPath();
+                _vehicleAgent.Warp(resetWorldPosition);
             }
             else
             {
                 transform.position = resetWorldPosition;
             }
 
-            lastPosition = resetWorldPosition;
+            _lastPosition = resetWorldPosition;
         }
 
         public void SetSpeed(float speed)
         {
-            VehicleSpeed = Mathf.Max(0.1f, speed);
+            _vehicleSpeed = Mathf.Max(0.1f, speed);
 
-            if (VehicleAgent != null)
+            if (_vehicleAgent != null)
             {
-                VehicleAgent.speed = VehicleSpeed;
+                _vehicleAgent.speed = _vehicleSpeed;
             }
         }
 
         private void ConfigureSmoothCornering()
         {
-            if (VehicleAgent == null)
+            if (_vehicleAgent == null)
             {
                 return;
             }
 
-            VehicleAgent.autoBraking = false;
-            VehicleAgent.angularSpeed = VehicleAngularSpeed;
-            VehicleAgent.acceleration = VehicleAcceleration;
-            VehicleAgent.speed = VehicleSpeed;
+            _vehicleAgent.autoBraking = false;
+            _vehicleAgent.angularSpeed = _vehicleAngularSpeed;
+            _vehicleAgent.acceleration = _vehicleAcceleration;
+            _vehicleAgent.speed = _vehicleSpeed;
         }
 
         private void UpdateStuckDetection()
         {
-            float movement = Vector3.Distance(transform.position, lastPosition);
-            lastPosition = transform.position;
+            float movement = Vector3.Distance(transform.position, _lastPosition);
+            _lastPosition = transform.position;
 
             if (movement < MIN_MOVEMENT_THRESHOLD)
             {
-                stuckTimer += Time.deltaTime;
+                _stuckTimer += Time.deltaTime;
 
-                if (stuckTimer >= STUCK_TIME_THRESHOLD)
+                if (_stuckTimer >= STUCK_TIME_THRESHOLD)
                 {
-                    stuckTimer = 0f;
+                    _stuckTimer = 0f;
                     RecoverFromStuck();
                 }
             }
             else
             {
-                stuckTimer = 0f;
+                _stuckTimer = 0f;
             }
         }
 
         private void RecoverFromStuck()
         {
-            if (currentWaypointIndex >= activeWaypoints.Count)
+            if (_currentWaypointIndex >= _activeWaypoints.Count)
             {
                 return;
             }
@@ -266,25 +264,25 @@ namespace _Project.Scripts.Gameplay.Drivers
                 return;
             }
 
-            VehicleAgent.ResetPath();
-            VehicleAgent.SetDestination(activeWaypoints[currentWaypointIndex]);
+            _vehicleAgent.ResetPath();
+            _vehicleAgent.SetDestination(_activeWaypoints[_currentWaypointIndex]);
         }
 
         private void AdvanceToNextWaypoint()
         {
-            int reachedIndex = currentWaypointIndex;
-            currentWaypointIndex++;
+            int reachedIndex = _currentWaypointIndex;
+            _currentWaypointIndex++;
 
-            if (currentWaypointIndex >= activeWaypoints.Count)
+            if (_currentWaypointIndex >= _activeWaypoints.Count)
             {
-                isDriving = false;
-                stuckTimer = 0f;
+                _isDriving = false;
+                _stuckTimer = 0f;
 
-                if (VehicleAgent != null && VehicleAgent.isActiveAndEnabled && VehicleAgent.isOnNavMesh)
+                if (_vehicleAgent != null && _vehicleAgent.isActiveAndEnabled && _vehicleAgent.isOnNavMesh)
                 {
-                    VehicleAgent.autoBraking = true;
-                    VehicleAgent.isStopped = true;
-                    VehicleAgent.ResetPath();
+                    _vehicleAgent.autoBraking = true;
+                    _vehicleAgent.isStopped = true;
+                    _vehicleAgent.ResetPath();
                 }
 
                 OnWaypointReached?.Invoke(reachedIndex);
@@ -292,12 +290,12 @@ namespace _Project.Scripts.Gameplay.Drivers
                 return;
             }
 
-            bool isApproachingFinalPoint = currentWaypointIndex == activeWaypoints.Count - 1;
-            VehicleAgent.autoBraking = isApproachingFinalPoint;
+            bool isApproachingFinalPoint = _currentWaypointIndex == _activeWaypoints.Count - 1;
+            _vehicleAgent.autoBraking = isApproachingFinalPoint;
 
             if (EnsureAgentIsPlacedOnNavMesh(transform.position))
             {
-                VehicleAgent.SetDestination(activeWaypoints[currentWaypointIndex]);
+                _vehicleAgent.SetDestination(_activeWaypoints[_currentWaypointIndex]);
             }
 
             OnWaypointReached?.Invoke(reachedIndex);
@@ -305,12 +303,12 @@ namespace _Project.Scripts.Gameplay.Drivers
 
         private bool EnsureAgentIsPlacedOnNavMesh(Vector3 referencePosition)
         {
-            if (VehicleAgent == null || !VehicleAgent.isActiveAndEnabled)
+            if (_vehicleAgent == null || !_vehicleAgent.isActiveAndEnabled)
             {
                 return false;
             }
 
-            if (VehicleAgent.isOnNavMesh)
+            if (_vehicleAgent.isOnNavMesh)
             {
                 return true;
             }
@@ -320,14 +318,14 @@ namespace _Project.Scripts.Gameplay.Drivers
 
             if (NavMesh.SamplePosition(referencePosition, out NavMeshHit hitInfo, NAVMESH_RECOVERY_RADIUS, preferredMask))
             {
-                VehicleAgent.Warp(hitInfo.position);
-                return VehicleAgent.isOnNavMesh;
+                _vehicleAgent.Warp(hitInfo.position);
+                return _vehicleAgent.isOnNavMesh;
             }
 
             if (NavMesh.SamplePosition(referencePosition, out hitInfo, NAVMESH_RECOVERY_RADIUS, NavMesh.AllAreas))
             {
-                VehicleAgent.Warp(hitInfo.position);
-                return VehicleAgent.isOnNavMesh;
+                _vehicleAgent.Warp(hitInfo.position);
+                return _vehicleAgent.isOnNavMesh;
             }
 
             return false;

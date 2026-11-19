@@ -46,12 +46,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f74f116ae0869a4785bb1a3c0f4d15c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.RouteVehicleDriver
-  <VehicleAgent>k__BackingField: {fileID: 4038660830766366649}
-  <WaypointReachDistance>k__BackingField: 1.15
-  <FinalDestinationDistance>k__BackingField: 0.5
-  <VehicleAngularSpeed>k__BackingField: 420
-  <VehicleAcceleration>k__BackingField: 24
-  <VehicleSpeed>k__BackingField: 8
+  _vehicleAgent: {fileID: 0}
+  _waypointReachDistance: 1.15
+  _finalDestinationDistance: 0.5
+  _vehicleAngularSpeed: 420
+  _vehicleAcceleration: 24
+  _vehicleSpeed: 8
 --- !u!195 &4038660830766366649
 NavMeshAgent:
   m_ObjectHideFlags: 0
