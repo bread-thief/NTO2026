@@ -17,6 +17,16 @@
                     "priority": 0
                 },
                 {
+                    "name": "Delta",
+                    "type": "Value",
+                    "id": "40023ac5-398a-48d4-b429-0b432cad1ee9",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true,
+                    "priority": 0
+                },
+                {
                     "name": "Primary",
                     "type": "Button",
                     "id": "88f16c15-ae69-4ba8-a630-4632297ea5e0",
@@ -133,6 +143,17 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "Middle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "036af761-6e31-4420-8030-6d438530437f",
+                    "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Mouse",
+                    "action": "Delta",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

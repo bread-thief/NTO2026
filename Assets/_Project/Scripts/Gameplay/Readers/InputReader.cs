@@ -12,6 +12,7 @@ namespace _Project.Scripts.Gameplay.Readers
         public event Action PrimaryReleased = delegate { };
         public event Action SecondaryPressed = delegate { };
         public event Action<Vector2> PositionAction = delegate { };
+        public event Action<Vector2> DeltaAction = delegate { };
 
         private Controls _controls;
 
@@ -40,6 +41,11 @@ namespace _Project.Scripts.Gameplay.Readers
         public void OnPosition(InputAction.CallbackContext context)
         {
             PositionAction?.Invoke(context.ReadValue<Vector2>());
+        }
+        
+        public void OnDelta(InputAction.CallbackContext context)
+        {
+            DeltaAction?.Invoke(context.ReadValue<Vector2>());
         }
 
         public void OnPrimary(InputAction.CallbackContext context)
