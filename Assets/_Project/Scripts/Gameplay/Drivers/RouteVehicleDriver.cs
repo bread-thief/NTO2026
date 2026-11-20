@@ -10,14 +10,17 @@ namespace _Project.Scripts.Gameplay.Drivers
     {
         private const string ROAD_AREA_NAME = "Road";
         private const int INVALID_AREA_INDEX = -1;
-        private const float WAYPOINT_REACH_THRESHOLD = 1.15f;
-        private const float FINAL_DESTINATION_THRESHOLD = 0.5f;
-        private const float NAVMESH_RECOVERY_RADIUS = 15f;
+        private const float WAYPOINT_REACH_THRESHOLD = 0.08f;
+        private const float FINAL_DESTINATION_THRESHOLD = 0.03f;
+        private const float NAVMESH_RECOVERY_RADIUS = 1.5f;
         private const float DEFAULT_TURN_SPEED = 420f;
-        private const float DEFAULT_ACCELERATION = 24f;
-        private const float DEFAULT_VEHICLE_SPEED = 8f;
-        private const float MIN_MOVEMENT_THRESHOLD = 0.01f;
-        private const float STUCK_TIME_THRESHOLD = 1.5f;
+        private const float DEFAULT_ACCELERATION = 25f;
+        private const float DEFAULT_VEHICLE_SPEED = 3f;
+        private const float MIN_SPEED_THRESHOLD = 0.002f;
+        private const float STUCK_TIME_THRESHOLD = 2.0f;
+        private const float TURN_SLOWDOWN_ANGLE = 25f;
+        private const float MIN_TURN_SPEED_MULTIPLIER = 0.4f;
+        private const float SPEED_SCALE_MULTIPLIER = 0.1f;
 
         [SerializeField] private NavMeshAgent _vehicleAgent;
         [SerializeField] private float _waypointReachDistance = WAYPOINT_REACH_THRESHOLD;
@@ -51,6 +54,7 @@ namespace _Project.Scripts.Gameplay.Drivers
         private bool _isDriving;
         private float _stuckTimer;
         private Vector3 _lastPosition;
+        private float _baseSpeed;
 
         private void Awake()
         {
@@ -59,6 +63,7 @@ namespace _Project.Scripts.Gameplay.Drivers
                 _vehicleAgent = GetComponent<NavMeshAgent>();
             }
 
+            _baseSpeed = _vehicleSpeed;
             _lastPosition = transform.position;
             ConfigureRoadOnlyAreaMask();
             ConfigureSmoothCornering();
@@ -81,6 +86,7 @@ namespace _Project.Scripts.Gameplay.Drivers
                 return;
             }
 
+            UpdateRotationAndTurnSpeed();
             UpdateStuckDetection();
 
             bool isLastWaypoint = _currentWaypointIndex >= _activeWaypoints.Count - 1;
@@ -91,9 +97,45 @@ namespace _Project.Scripts.Gameplay.Drivers
             Vector3 flatTargetPosition = new Vector3(currentTarget.x, 0f, currentTarget.z);
             float horizontalDistance = Vector3.Distance(flatVehiclePosition, flatTargetPosition);
 
-            if (horizontalDistance <= requiredDistance || _vehicleAgent.remainingDistance <= requiredDistance)
+            bool hasReachedViaAgent = _vehicleAgent.hasPath && _vehicleAgent.remainingDistance <= requiredDistance;
+
+            if (horizontalDistance <= requiredDistance || hasReachedViaAgent)
             {
                 AdvanceToNextWaypoint();
+            }
+        }
+
+        private void UpdateRotationAndTurnSpeed()
+        {
+            Vector3 targetPoint = _vehicleAgent.hasPath ? _vehicleAgent.steeringTarget : CurrentTargetPosition;
+            Vector3 direction = targetPoint - transform.position;
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude > 0.000001f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction.normalized);
+                float angle = Quaternion.Angle(transform.rotation, targetRotation);
+
+                transform.rotation = Quaternion.RotateTowards(
+                    transform.rotation,
+                    targetRotation,
+                    _vehicleAngularSpeed * Time.deltaTime
+                );
+
+                float speedMultiplier = 1f;
+                if (angle > TURN_SLOWDOWN_ANGLE)
+                {
+                    float t = Mathf.InverseLerp(TURN_SLOWDOWN_ANGLE, 180f, angle);
+                    speedMultiplier = Mathf.Lerp(1f, MIN_TURN_SPEED_MULTIPLIER, t);
+                }
+
+                float targetSpeed = _baseSpeed * speedMultiplier;
+                _vehicleAgent.speed = targetSpeed;
+
+                if (_vehicleAgent.velocity.sqrMagnitude > 0.000001f)
+                {
+                    _vehicleAgent.velocity = transform.forward * Mathf.Min(_vehicleAgent.velocity.magnitude, targetSpeed);
+                }
             }
         }
 
@@ -110,7 +152,6 @@ namespace _Project.Scripts.Gameplay.Drivers
             }
 
             int roadAreaIndex = NavMesh.GetAreaFromName(ROAD_AREA_NAME);
-
             if (roadAreaIndex != INVALID_AREA_INDEX)
             {
                 _vehicleAgent.areaMask = 1 << roadAreaIndex;
@@ -152,7 +193,6 @@ namespace _Project.Scripts.Gameplay.Drivers
             }
 
             _activeWaypoints.Clear();
-
             for (int index = 0; index < waypoints.Count; index++)
             {
                 _activeWaypoints.Add(waypoints[index]);
@@ -163,7 +203,7 @@ namespace _Project.Scripts.Gameplay.Drivers
             _stuckTimer = 0f;
             _lastPosition = transform.position;
 
-            _vehicleAgent.speed = _vehicleSpeed;
+            _vehicleAgent.speed = _baseSpeed;
             _vehicleAgent.isStopped = false;
             _vehicleAgent.SetDestination(_activeWaypoints[_currentWaypointIndex]);
         }
@@ -194,27 +234,27 @@ namespace _Project.Scripts.Gameplay.Drivers
                 _vehicleAgent = GetComponent<NavMeshAgent>();
             }
 
-            if (_vehicleAgent != null && EnsureAgentIsPlacedOnNavMesh(resetWorldPosition))
+            if (_vehicleAgent != null && TryGetValidNavMeshPosition(resetWorldPosition, out Vector3 validPosition))
             {
+                _vehicleAgent.Warp(validPosition);
                 _vehicleAgent.isStopped = true;
                 _vehicleAgent.ResetPath();
-                _vehicleAgent.Warp(resetWorldPosition);
+                _lastPosition = validPosition;
             }
             else
             {
                 transform.position = resetWorldPosition;
+                _lastPosition = resetWorldPosition;
             }
-
-            _lastPosition = resetWorldPosition;
         }
 
         public void SetSpeed(float speed)
         {
-            _vehicleSpeed = Mathf.Max(0.1f, speed);
-
+            _vehicleSpeed = Mathf.Max(0.005f, speed * SPEED_SCALE_MULTIPLIER);
+            _baseSpeed = _vehicleSpeed;
             if (_vehicleAgent != null)
             {
-                _vehicleAgent.speed = _vehicleSpeed;
+                _vehicleAgent.speed = _baseSpeed;
             }
         }
 
@@ -225,21 +265,26 @@ namespace _Project.Scripts.Gameplay.Drivers
                 return;
             }
 
+            _vehicleAgent.updateRotation = false;
             _vehicleAgent.autoBraking = false;
             _vehicleAgent.angularSpeed = _vehicleAngularSpeed;
             _vehicleAgent.acceleration = _vehicleAcceleration;
-            _vehicleAgent.speed = _vehicleSpeed;
+            _vehicleAgent.speed = _baseSpeed;
         }
 
         private void UpdateStuckDetection()
         {
-            float movement = Vector3.Distance(transform.position, _lastPosition);
+            if (Time.deltaTime <= 0f)
+            {
+                return;
+            }
+
+            float currentSpeed = Vector3.Distance(transform.position, _lastPosition) / Time.deltaTime;
             _lastPosition = transform.position;
 
-            if (movement < MIN_MOVEMENT_THRESHOLD)
+            if (currentSpeed < MIN_SPEED_THRESHOLD)
             {
                 _stuckTimer += Time.deltaTime;
-
                 if (_stuckTimer >= STUCK_TIME_THRESHOLD)
                 {
                     _stuckTimer = 0f;
@@ -313,21 +358,33 @@ namespace _Project.Scripts.Gameplay.Drivers
                 return true;
             }
 
+            if (TryGetValidNavMeshPosition(referencePosition, out Vector3 validPosition))
+            {
+                _vehicleAgent.Warp(validPosition);
+                return _vehicleAgent.isOnNavMesh;
+            }
+
+            return false;
+        }
+
+        private bool TryGetValidNavMeshPosition(Vector3 referencePosition, out Vector3 validPosition)
+        {
             int roadAreaIndex = NavMesh.GetAreaFromName(ROAD_AREA_NAME);
             int preferredMask = roadAreaIndex != INVALID_AREA_INDEX ? (1 << roadAreaIndex) : NavMesh.AllAreas;
 
             if (NavMesh.SamplePosition(referencePosition, out NavMeshHit hitInfo, NAVMESH_RECOVERY_RADIUS, preferredMask))
             {
-                _vehicleAgent.Warp(hitInfo.position);
-                return _vehicleAgent.isOnNavMesh;
+                validPosition = hitInfo.position;
+                return true;
             }
 
-            if (NavMesh.SamplePosition(referencePosition, out hitInfo, NAVMESH_RECOVERY_RADIUS, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(referencePosition, out NavMeshHit fallbackHitInfo, NAVMESH_RECOVERY_RADIUS, NavMesh.AllAreas))
             {
-                _vehicleAgent.Warp(hitInfo.position);
-                return _vehicleAgent.isOnNavMesh;
+                validPosition = fallbackHitInfo.position;
+                return true;
             }
 
+            validPosition = referencePosition;
             return false;
         }
     }

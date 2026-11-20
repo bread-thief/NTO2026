@@ -135,8 +135,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c210d4b9a249ee4cb9d64042dae074a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoadConnector
-  <NorthRoad>k__BackingField: 0
-  <EastRoad>k__BackingField: 0
-  <SouthRoad>k__BackingField: 0
-  <WestRoad>k__BackingField: 0
-  <Weight>k__BackingField: 1
+  _northRoad: 0
+  _eastRoad: 0
+  _southRoad: 0
+  _westRoad: 0
+  _weight: 1
+  _mapSprite: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}

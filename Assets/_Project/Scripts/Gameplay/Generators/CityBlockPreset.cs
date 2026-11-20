@@ -18,8 +18,10 @@ namespace _Project.Scripts.Gameplay.Generators
         [SerializeField] private bool _southRoad;
         [SerializeField] private bool _westRoad;
         [SerializeField, Min(1)] private int _weight = 1;
+        [SerializeField] private Sprite _mapSprite;
 
         public int Weight => _weight;
+        public Sprite MapSprite => _mapSprite;
 
         public int RoadCount
         {

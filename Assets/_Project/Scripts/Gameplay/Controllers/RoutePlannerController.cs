@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using _Project.Scripts.Gameplay.Drivers;
 using _Project.Scripts.Gameplay.Generators;
 using _Project.Scripts.Gameplay.Handlers;
@@ -38,16 +36,22 @@ namespace _Project.Scripts.Gameplay.Controllers
         [SerializeField] private bool _autoStartVehicleOnComplete = true;
         [SerializeField, Min(1)] private int _maxTrips = 5;
 
-        public event Action<IReadOnlyList<Vector3>> OnRouteCompleted;
+        public event System.Action<System.Collections.Generic.IReadOnlyList<Vector3>> OnRouteCompleted;
+        public event System.Action<RouteVehicleDriver> OnRouteEndpointsConfigured;
 
         public bool IsRouteCompleted { get; private set; }
         public int CompletedTrips { get; private set; }
         public bool IsCurrentTargetPointB { get; private set; } = true;
 
-        private readonly List<Vector2Int> _routeCellWaypoints = new List<Vector2Int>();
-        private readonly List<Vector3> _smoothedWorldWaypoints = new List<Vector3>();
-        private readonly List<float> _smoothedWaypointDistances = new List<float>();
-        private readonly HashSet<Vector2Int> _visitedCells = new HashSet<Vector2Int>();
+        public DeliveryRouteNode PointANode => _pointANode;
+        public DeliveryRouteNode PointBNode => _pointBNode;
+        public RouteVehicleDriver VehicleDriver => _vehicleDriver;
+        public System.Collections.Generic.IReadOnlyList<Vector3> SmoothedWorldWaypoints => _smoothedWorldWaypoints;
+
+        private readonly System.Collections.Generic.List<Vector2Int> _routeCellWaypoints = new System.Collections.Generic.List<Vector2Int>();
+        private readonly System.Collections.Generic.List<Vector3> _smoothedWorldWaypoints = new System.Collections.Generic.List<Vector3>();
+        private readonly System.Collections.Generic.List<float> _smoothedWaypointDistances = new System.Collections.Generic.List<float>();
+        private readonly System.Collections.Generic.HashSet<Vector2Int> _visitedCells = new System.Collections.Generic.HashSet<Vector2Int>();
 
         private int _roadAreaMask = NavMesh.AllAreas;
         private float _totalSmoothedPathLength;
@@ -93,10 +97,7 @@ namespace _Project.Scripts.Gameplay.Controllers
                 _playerInputHandler.OnPrimaryReleased += HandlePrimaryReleased;
             }
 
-            if (_vehicleDriver != null)
-            {
-                _vehicleDriver.OnDestinationReached += HandleVehicleDestinationReached;
-            }
+            SubscribeVehicle();
         }
 
         private void OnDisable()
@@ -107,6 +108,20 @@ namespace _Project.Scripts.Gameplay.Controllers
                 _playerInputHandler.OnPrimaryReleased -= HandlePrimaryReleased;
             }
 
+            UnsubscribeVehicle();
+        }
+
+        private void SubscribeVehicle()
+        {
+            if (_vehicleDriver != null)
+            {
+                _vehicleDriver.OnDestinationReached -= HandleVehicleDestinationReached;
+                _vehicleDriver.OnDestinationReached += HandleVehicleDestinationReached;
+            }
+        }
+
+        private void UnsubscribeVehicle()
+        {
             if (_vehicleDriver != null)
             {
                 _vehicleDriver.OnDestinationReached -= HandleVehicleDestinationReached;
@@ -137,19 +152,13 @@ namespace _Project.Scripts.Gameplay.Controllers
 
         public void ConfigureRouteEndpoints(DeliveryRouteNode startNode, DeliveryRouteNode endNode, RouteVehicleDriver driver)
         {
-            if (_vehicleDriver != null)
-            {
-                _vehicleDriver.OnDestinationReached -= HandleVehicleDestinationReached;
-            }
+            UnsubscribeVehicle();
 
             _pointANode = startNode;
             _pointBNode = endNode;
             _vehicleDriver = driver;
 
-            if (_vehicleDriver != null)
-            {
-                _vehicleDriver.OnDestinationReached += HandleVehicleDestinationReached;
-            }
+            SubscribeVehicle();
 
             CompletedTrips = 0;
             IsCurrentTargetPointB = true;
@@ -157,6 +166,8 @@ namespace _Project.Scripts.Gameplay.Controllers
             _isDragging = false;
 
             ResetRoutePlanning();
+
+            OnRouteEndpointsConfigured?.Invoke(_vehicleDriver);
         }
 
         public void ResetRoutePlanning()
@@ -303,7 +314,7 @@ namespace _Project.Scripts.Gameplay.Controllers
                     destinationCell = destCell;
                 }
 
-                List<Vector2Int> cellStepSequence = FindConnectedRoadCellPath(currentLastCell, targetCell, destinationCell);
+                System.Collections.Generic.List<Vector2Int> cellStepSequence = FindConnectedRoadCellPath(currentLastCell, targetCell, destinationCell);
 
                 if (cellStepSequence != null && cellStepSequence.Count >= 2)
                 {
@@ -478,11 +489,11 @@ namespace _Project.Scripts.Gameplay.Controllers
             return preset != null && preset.RoadCount > 0;
         }
 
-        private List<Vector2Int> FindConnectedRoadCellPath(Vector2Int startCell, Vector2Int endCell, Vector2Int destinationCell)
+        private System.Collections.Generic.List<Vector2Int> FindConnectedRoadCellPath(Vector2Int startCell, Vector2Int endCell, Vector2Int destinationCell)
         {
             Vector2Int gridDimensions = _generator.GetGridDimensions;
-            Queue<Vector2Int> frontier = new Queue<Vector2Int>();
-            Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+            System.Collections.Generic.Queue<Vector2Int> frontier = new System.Collections.Generic.Queue<Vector2Int>();
+            System.Collections.Generic.Dictionary<Vector2Int, Vector2Int> cameFrom = new System.Collections.Generic.Dictionary<Vector2Int, Vector2Int>();
 
             frontier.Enqueue(startCell);
             cameFrom[startCell] = startCell;
@@ -549,9 +560,9 @@ namespace _Project.Scripts.Gameplay.Controllers
             return null;
         }
 
-        private List<Vector2Int> ReconstructCellPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int startCell, Vector2Int endCell)
+        private System.Collections.Generic.List<Vector2Int> ReconstructCellPath(System.Collections.Generic.Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int startCell, Vector2Int endCell)
         {
-            List<Vector2Int> reversedPath = new List<Vector2Int>();
+            System.Collections.Generic.List<Vector2Int> reversedPath = new System.Collections.Generic.List<Vector2Int>();
             Vector2Int current = endCell;
 
             while (current != startCell)
@@ -581,7 +592,7 @@ namespace _Project.Scripts.Gameplay.Controllers
             Vector3 startWorldPosition = GetCurrentStartPosition();
             Vector3 endWorldPosition = GetCurrentTargetPosition();
 
-            List<Vector3> rawCellCenters = new List<Vector3>(_routeCellWaypoints.Count);
+            System.Collections.Generic.List<Vector3> rawCellCenters = new System.Collections.Generic.List<Vector3>(_routeCellWaypoints.Count);
 
             for (int index = 0; index < _routeCellWaypoints.Count; index++)
             {
@@ -604,8 +615,8 @@ namespace _Project.Scripts.Gameplay.Controllers
                 rawCellCenters.Add(centerWorld);
             }
 
-            List<Vector3> roundedWaypoints = BuildRoundedRoadWaypoints(rawCellCenters);
-            List<Vector3> subdividedWaypoints = SubdivideWaypoints(roundedWaypoints, _lineSegmentLength);
+            System.Collections.Generic.List<Vector3> roundedWaypoints = BuildRoundedRoadWaypoints(rawCellCenters);
+            System.Collections.Generic.List<Vector3> subdividedWaypoints = SubdivideWaypoints(roundedWaypoints, _lineSegmentLength);
 
             _smoothedWorldWaypoints.AddRange(subdividedWaypoints);
 
@@ -633,9 +644,9 @@ namespace _Project.Scripts.Gameplay.Controllers
             }
         }
 
-        private List<Vector3> SubdivideWaypoints(List<Vector3> points, float maxSegmentLength)
+        private System.Collections.Generic.List<Vector3> SubdivideWaypoints(System.Collections.Generic.List<Vector3> points, float maxSegmentLength)
         {
-            List<Vector3> result = new List<Vector3>();
+            System.Collections.Generic.List<Vector3> result = new System.Collections.Generic.List<Vector3>();
 
             if (points.Count == 0)
             {
@@ -671,9 +682,9 @@ namespace _Project.Scripts.Gameplay.Controllers
             return result;
         }
 
-        private List<Vector3> BuildRoundedRoadWaypoints(List<Vector3> controlPoints)
+        private System.Collections.Generic.List<Vector3> BuildRoundedRoadWaypoints(System.Collections.Generic.List<Vector3> controlPoints)
         {
-            List<Vector3> result = new List<Vector3>();
+            System.Collections.Generic.List<Vector3> result = new System.Collections.Generic.List<Vector3>();
 
             if (controlPoints.Count <= 2)
             {
@@ -830,7 +841,7 @@ namespace _Project.Scripts.Gameplay.Controllers
                 startDistance = Mathf.Max(0f, vehicleDistance - _lineEraseOffset);
             }
 
-            List<Vector3> visiblePoints = BuildVisiblePoints(startDistance);
+            System.Collections.Generic.List<Vector3> visiblePoints = BuildVisiblePoints(startDistance);
 
             _routeLineRenderer.useWorldSpace = true;
             _routeLineRenderer.positionCount = visiblePoints.Count;
@@ -843,9 +854,9 @@ namespace _Project.Scripts.Gameplay.Controllers
             }
         }
 
-        private List<Vector3> BuildVisiblePoints(float startDistance)
+        private System.Collections.Generic.List<Vector3> BuildVisiblePoints(float startDistance)
         {
-            List<Vector3> points = new List<Vector3>();
+            System.Collections.Generic.List<Vector3> points = new System.Collections.Generic.List<Vector3>();
 
             if (startDistance <= 0f)
             {
