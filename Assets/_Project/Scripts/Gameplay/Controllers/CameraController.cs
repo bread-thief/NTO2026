@@ -7,32 +7,40 @@ namespace _Project.Scripts.Gameplay.Controllers
     {
         [SerializeField] private CinemachineCamera[] _cameras;
         [SerializeField] private Changes[] _changes;
+        public bool CanMove { get; private set; } = true;
 
         public void ChangeCamera(int id)
         {
-            _cameras[id].Priority = 1;
-            foreach (CinemachineCamera camera in _cameras)
+            if (CanMove)
             {
-                if (camera != _cameras[id])
+                foreach (CinemachineCamera camera in _cameras)
                 {
                     camera.Priority = 0;
                 }
-            }
 
-            foreach (GameObject obj in _changes[id].ToDisable)
-            {
-                obj.SetActive(false);
+                _changes[id].Camera.Priority = 1;
+
+                foreach (GameObject obj in _changes[id].ToDisable)
+                {
+                    obj.SetActive(false);
+                }
+
+                foreach (GameObject obj in _changes[id].ToEnable)
+                {
+                    obj.SetActive(true);
+                }
             }
-            
-            foreach (GameObject obj in _changes[id].ToEnable)
-            {
-                obj.SetActive(true);
-            }
+        }
+
+        public void SetCanMove(bool value)
+        {
+            CanMove = value;
         }
 
         [System.Serializable]
         public class Changes
         {
+            [field: SerializeField] public CinemachineCamera Camera { get; private set; }
             [field: SerializeField] public GameObject[] ToDisable { get; private set; }
             [field: SerializeField] public GameObject[] ToEnable { get; private set; }
         }
