@@ -16,7 +16,7 @@ namespace _Project.Scripts.Gameplay.Views
         [SerializeField] private float _messageDuration = 5f;
         [SerializeField] private Radio.Radio _radio;
 
-        [SerializeField] private float _messageTimer = 10f;
+        private float _messageTimer;
 
         private void Awake()
         {
@@ -65,8 +65,6 @@ namespace _Project.Scripts.Gameplay.Views
         {
             if (_messageTimer <= 0f)
             {
-                ShowMessage("Дарова братки йоу бибика рулит");
-                this.enabled = false;
                 return;
             }
 
@@ -111,7 +109,7 @@ namespace _Project.Scripts.Gameplay.Views
             ShowMessage($"Авария! Потеряно {penaltyMinutes} минут");
         }
 
-        private void ShowMessage(string message)
+        public void ShowMessage(string message)
         {
             //if (_messageText == null)
             //{

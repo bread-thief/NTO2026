@@ -1,4 +1,6 @@
-using System;
+using System.Collections;
+using _Project.Scripts.Gameplay.Obstacles;
+using _Project.Scripts.Gameplay.Views;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -10,8 +12,22 @@ namespace _Project.Scripts.Gameplay.Controllers
         [SerializeField] private CinemachineCamera[] _cameras;
         [SerializeField] private Changes[] _changes;
         [SerializeField] private RoutePlannerController _routePlannerController;
+        [SerializeField] private DeliveryShiftController _deliveryShiftController;
+        [SerializeField] private FadeController _fadeController;
+        [SerializeField] private RoadObstacleController _obstacleController;
+        [SerializeField] private ObstacleNotificationView _notificationView;
         [SerializeField] private GameObject _zonesPanel;
         public bool CanMove { get; private set; } = true;
+
+        private void OnEnable()
+        {
+            _deliveryShiftController.OnDeliveryCompleted += ResetCameraWithAnimation;
+        }
+        
+        private void OnDisable()
+        {
+            _deliveryShiftController.OnDeliveryCompleted -= ResetCameraWithAnimation;
+        }
 
         private void Update()
         {
@@ -47,6 +63,23 @@ namespace _Project.Scripts.Gameplay.Controllers
                     obj.SetActive(true);
                 }
             }
+        }
+
+        public void ResetCamera(int i = 0) => ChangeCamera(2);
+
+        public void ResetCameraWithAnimation(int i)
+        {
+            StartCoroutine(ResetCameraWithAnimationRoutine());
+        }
+
+        public IEnumerator ResetCameraWithAnimationRoutine()
+        {
+            yield return _fadeController.FadeRoutine(1f, 1f);
+            ResetCamera();
+            yield return new WaitForSecondsRealtime(1.5f);
+            yield return _fadeController.FadeRoutine(0f, 1f);
+            _notificationView.ShowMessage(_obstacleController.ActiveObstacles[0].BuildDisplayMessage());
+            
         }
 
         public void SetCanMove(bool value)

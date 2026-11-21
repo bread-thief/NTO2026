@@ -22,7 +22,7 @@ namespace _Project.Scripts.Gameplay.Radio
             for (int i = 1; i <= text.Length; i++)
             {
                 _textMeshProUGUI.maxVisibleCharacters = i;
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.1f);
             }
             
             _audioSource.Stop();
