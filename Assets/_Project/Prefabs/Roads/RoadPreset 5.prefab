@@ -141,4 +141,4 @@ MonoBehaviour:
   _southRoad: 0
   _westRoad: 1
   _weight: 1
-  _mapSprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
+  _mapSprite: {fileID: -2047872230, guid: 7e771deb3d53fb94885cde662c7db487, type: 3}

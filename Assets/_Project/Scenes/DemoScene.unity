@@ -707,7 +707,7 @@ MonoBehaviour:
     m_Bits: 55
   m_UseGeometry: 0
   m_DefaultArea: 3
-  m_GenerateLinks: 0
+  m_GenerateLinks: 1
   m_IgnoreNavMeshAgent: 1
   m_IgnoreNavMeshObstacle: 1
   m_OverrideTileSize: 0

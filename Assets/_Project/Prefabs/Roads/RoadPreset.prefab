@@ -143,7 +143,7 @@ MonoBehaviour:
   _southRoad: 0
   _westRoad: 1
   _weight: 1
-  _mapSprite: {fileID: 21300000, guid: f2b86942c8e1d49a4ae3172875621242, type: 3}
+  _mapSprite: {fileID: -1381419913, guid: 7e771deb3d53fb94885cde662c7db487, type: 3}
 --- !u!1001 &6216348954549022072
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -244,7 +244,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4d1f31aea8330974baf691acf936600e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0000003576278
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4d1f31aea8330974baf691acf936600e, type: 3}
       propertyPath: m_LocalPosition.z

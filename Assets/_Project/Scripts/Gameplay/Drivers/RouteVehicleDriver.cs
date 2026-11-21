@@ -10,22 +10,17 @@ namespace _Project.Scripts.Gameplay.Drivers
     {
         private const string ROAD_AREA_NAME = "Road";
         private const int INVALID_AREA_INDEX = -1;
-        private const float WAYPOINT_REACH_THRESHOLD = 0.02f;
-        private const float FINAL_DESTINATION_THRESHOLD = 0.02f;
         private const float NAVMESH_RECOVERY_RADIUS = 1.5f;
-        private const float DEFAULT_TURN_SPEED = 360f;
-        private const float DEFAULT_ACCELERATION = 20f;
-        private const float DEFAULT_VEHICLE_SPEED = 1.5f;
         private const float MIN_SPEED_THRESHOLD = 0.002f;
         private const float STUCK_TIME_THRESHOLD = 2.0f;
         private const float SPEED_SCALE_MULTIPLIER = 0.1f;
 
         [SerializeField] private NavMeshAgent _vehicleAgent;
-        [SerializeField] private float _waypointReachDistance = WAYPOINT_REACH_THRESHOLD;
-        [SerializeField] private float _finalDestinationDistance = FINAL_DESTINATION_THRESHOLD;
-        [SerializeField] private float _vehicleAngularSpeed = DEFAULT_TURN_SPEED;
-        [SerializeField] private float _vehicleAcceleration = DEFAULT_ACCELERATION;
-        [SerializeField] private float _vehicleSpeed = DEFAULT_VEHICLE_SPEED;
+        [SerializeField] private float _waypointReachDistance = 0.02f;
+        [SerializeField] private float _finalDestinationDistance = 0.02f;
+        [SerializeField] private float _vehicleAngularSpeed = 360f;
+        [SerializeField] private float _vehicleAcceleration = 20f;
+        [SerializeField] private float _vehicleSpeed = 1.5f;
 
         public event Action OnDestinationReached;
         public event Action<int> OnWaypointReached;
@@ -266,7 +261,6 @@ namespace _Project.Scripts.Gameplay.Drivers
             _vehicleAgent.updateRotation = false;
             _vehicleAgent.autoBraking = false;
             _vehicleAgent.stoppingDistance = 0f;
-            _vehicleAgent.radius = 0.01f;
             _vehicleAgent.angularSpeed = _vehicleAngularSpeed;
             _vehicleAgent.acceleration = _vehicleAcceleration;
             _vehicleAgent.speed = _baseSpeed;
