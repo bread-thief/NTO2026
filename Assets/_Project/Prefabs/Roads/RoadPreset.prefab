@@ -143,7 +143,7 @@ MonoBehaviour:
   _southRoad: 0
   _westRoad: 1
   _weight: 1
-  _mapSprite: {fileID: -1381419913, guid: 7e771deb3d53fb94885cde662c7db487, type: 3}
+  _mapSprite: {fileID: -1499309434, guid: 7e771deb3d53fb94885cde662c7db487, type: 3}
 --- !u!1001 &6216348954549022072
 PrefabInstance:
   m_ObjectHideFlags: 0

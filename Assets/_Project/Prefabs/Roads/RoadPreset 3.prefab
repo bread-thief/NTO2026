@@ -53,7 +53,7 @@ MonoBehaviour:
   _southRoad: 0
   _westRoad: 0
   _weight: 1
-  _mapSprite: {fileID: -1810619923, guid: 7e771deb3d53fb94885cde662c7db487, type: 3}
+  _mapSprite: {fileID: 790974335, guid: 7e771deb3d53fb94885cde662c7db487, type: 3}
 --- !u!1 &8101306319509797489
 GameObject:
   m_ObjectHideFlags: 0

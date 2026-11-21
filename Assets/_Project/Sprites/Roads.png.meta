@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -178,8 +178,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 64dcc163eded72f4a81b16cd8c39e69b
-      internalID: -2047872230
+      spriteID: 125d7ef53be07f6429952cf1b9ed45c4
+      internalID: -547592929
       vertices: []
       indices: 
       edges: []
@@ -200,8 +200,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ce2400abe1164f84795121b4ef0c96b4
-      internalID: -1381419913
+      spriteID: 466ee10bc13a9aa4698b1b72a624b086
+      internalID: -1594055284
       vertices: []
       indices: 
       edges: []
@@ -222,8 +222,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: de7efa1bc3b80e24b8deb9ca037c5b11
-      internalID: 391653058
+      spriteID: 2864104ee7604f34799776d28d01da92
+      internalID: 790974335
       vertices: []
       indices: 
       edges: []
@@ -244,8 +244,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ed2f963e0f2cdc146ab4347955945683
-      internalID: -1810619923
+      spriteID: 5bdfcaa6c9163954bb2fe8ecade69d3e
+      internalID: -2100132592
       vertices: []
       indices: 
       edges: []
@@ -266,8 +266,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d65c871daea42f441a965751e0b010e0
-      internalID: 1386126688
+      spriteID: 5639f69a675e1ce418ebdbab4610e971
+      internalID: -1499309434
       vertices: []
       indices: 
       edges: []
@@ -276,7 +276,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 778bd6ae9e8ddc048bfe1becbea93da5
     internalID: 0
     vertices: []
     indices: 
@@ -289,11 +289,11 @@ TextureImporter:
         value: '{"sliceOnImport":false,"gridCellCount":{"x":3.0,"y":2.0},"gridSpriteSize":{"x":512.0,"y":512.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Roads_0: -1396483287286313306
-      Roads_1: -2047872230
-      Roads_2: -1381419913
-      Roads_3: 391653058
-      Roads_4: -1810619923
-      Roads_5: 1386126688
+      Roads_1: -547592929
+      Roads_2: -1594055284
+      Roads_3: 790974335
+      Roads_4: -2100132592
+      Roads_5: -1499309434
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

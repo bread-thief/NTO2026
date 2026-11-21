@@ -254,13 +254,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3535534, y: -0.61237246, z: 0.3535534, w: 0.61237246}
+  m_LocalRotation: {x: 0.098776825, y: -0.7001737, z: 0.098776825, w: 0.7001737}
   m_LocalPosition: {x: -15, y: 20, z: -8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 521716142}
-  m_LocalEulerAnglesHint: {x: 60, y: -90, z: 0}
+  m_LocalEulerAnglesHint: {x: 16.06, y: -90, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -432,6 +432,57 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &433683802
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 433683803}
+  - component: {fileID: 433683804}
+  m_Layer: 0
+  m_Name: MapMarkerMaker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &433683803
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 433683802}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 521716142}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &433683804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 433683802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca557a1bfc2f20d4db6ce867bb30ded7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Controllers.MapMarkerMaker
+  _inputHandler: {fileID: 1571219425}
+  _mainCamera: {fileID: 330585545}
+  _pinPrefab: {fileID: 2154859027200259664, guid: 2beff15e48ab6ce418c1f98bb9d1143e, type: 3}
+  _spawnOffset: {x: 0.5, y: 0, z: 0}
+  _mapLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &521716141
 GameObject:
   m_ObjectHideFlags: 0
@@ -478,6 +529,7 @@ Transform:
   - {fileID: 994121083}
   - {fileID: 2103997414}
   - {fileID: 1480984201}
+  - {fileID: 433683803}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
@@ -880,7 +932,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1480984201}
   - component: {fileID: 1480984202}
-  m_Layer: 0
+  - component: {fileID: 1480984203}
+  m_Layer: 6
   m_Name: CityMapSpriteRenderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -915,9 +968,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.CityMapSpriteRenderer
   _generator: {fileID: 1820358568}
-  _spriteScale: 1
-  _sortingOrder: 1
+  _spriteScale: 1.05
+  _sortingOrder: 120
   _sortingLayerName: Default
+--- !u!65 &1480984203
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1480984200}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1571219423
 GameObject:
   m_ObjectHideFlags: 0
