@@ -5,13 +5,14 @@ namespace _Project.Scripts.Gameplay.Controllers
 {
     public class CameraController : MonoBehaviour
     {
+        [SerializeField] private CinemachineBrain _cinemachineBrain;
         [SerializeField] private CinemachineCamera[] _cameras;
         [SerializeField] private Changes[] _changes;
         public bool CanMove { get; private set; } = true;
 
         public void ChangeCamera(int id)
         {
-            if (CanMove)
+            if (CanMove && !_cinemachineBrain.IsBlending)
             {
                 foreach (CinemachineCamera camera in _cameras)
                 {
@@ -19,7 +20,6 @@ namespace _Project.Scripts.Gameplay.Controllers
                 }
 
                 _changes[id].Camera.Priority = 1;
-
                 foreach (GameObject obj in _changes[id].ToDisable)
                 {
                     obj.SetActive(false);
