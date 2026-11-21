@@ -1,3 +1,4 @@
+using System;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -8,7 +9,23 @@ namespace _Project.Scripts.Gameplay.Controllers
         [SerializeField] private CinemachineBrain _cinemachineBrain;
         [SerializeField] private CinemachineCamera[] _cameras;
         [SerializeField] private Changes[] _changes;
+        [SerializeField] private RoutePlannerController _routePlannerController;
+        [SerializeField] private GameObject _zonesPanel;
         public bool CanMove { get; private set; } = true;
+
+        private void Update()
+        {
+            if (_routePlannerController != null && _routePlannerController.IsDragging || _routePlannerController.IsVehicleDriving || _cinemachineBrain.IsBlending)
+            {
+                CanMove = false;
+                _zonesPanel.SetActive(false);
+            }
+            else
+            {
+                CanMove = true;
+                _zonesPanel.SetActive(true);
+            }
+        }
 
         public void ChangeCamera(int id)
         {

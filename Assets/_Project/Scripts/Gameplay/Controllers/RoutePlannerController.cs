@@ -59,6 +59,9 @@ namespace _Project.Scripts.Gameplay.Controllers
         private bool _isDragging;
         private Vector2Int _lastValidTargetCell;
 
+        public bool IsDragging => _isDragging;
+        public bool IsVehicleDriving => _isVehicleDriving;
+
         private void Awake()
         {
             if (_mainCamera == null)

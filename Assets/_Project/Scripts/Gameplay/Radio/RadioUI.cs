@@ -6,50 +6,29 @@ namespace _Project.Scripts.Gameplay.Radio
 {
     public class RadioUI : MonoBehaviour
     {
+        [SerializeField] private GameObject _textBoxPanel;
         [SerializeField] private TextMeshProUGUI _textMeshProUGUI;
         [SerializeField] private AudioSource _audioSource;
-        private bool _isTyping;
-        private bool _canSkip;
-
-        private void Skip()
-        {
-            if (_isTyping)
-            {
-                _isTyping = false;
-            }
-            else
-            {
-                _canSkip = true;
-            }
-        }
 
         public IEnumerator PrintText(string text)
         {
+            _textBoxPanel.SetActive(true);
+            if (_audioSource.clip != null)
+            {
+                _audioSource.Play();
+            }
             _textMeshProUGUI.text = text;
             _textMeshProUGUI.maxVisibleCharacters = 0;
-            _isTyping = true;
             for (int i = 1; i <= text.Length; i++)
             {
-                if (!_isTyping) break;
                 _textMeshProUGUI.maxVisibleCharacters = i;
-                _audioSource.PlayOneShot(_audioSource.clip);
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.25f);
             }
             
-            if (_isTyping == false)
-            {
-                _textMeshProUGUI.maxVisibleCharacters = text.Length;
-                yield return new WaitForEndOfFrame();
-            }
-            else
-            {
-                _textMeshProUGUI.maxVisibleCharacters = text.Length;
-                yield return new WaitForSeconds(0.3f);
-            }
+            _audioSource.Stop();
             
-            _isTyping = false;
-            _canSkip = false;
-            yield return new WaitUntil((() => _canSkip));
+            yield return new WaitForSeconds(5f);
+            _textBoxPanel.SetActive(false);
         }
     }
 }
