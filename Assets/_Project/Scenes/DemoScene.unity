@@ -1454,16 +1454,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CityGenerator
   _size: {x: 8, y: 15}
-  _cellSize: 0.9
+  _cellSize: 0.899
   _generateOnStart: 1
   _roadPresets:
   - {fileID: 4140962260670664931, guid: 7b59045b9b1484a4fbd8afbf20af8667, type: 3}
   - {fileID: 4140962260670664931, guid: abbd1142c13606241a6401187fe8d69c, type: 3}
   - {fileID: 4140962260670664931, guid: 3a56d6f63a1c2b24a8858619e346f511, type: 3}
   - {fileID: 4140962260670664931, guid: 4d7b9f522b3edae4e8eab7076d428e17, type: 3}
-  - {fileID: 4140962260670664931, guid: 86688c9cfc945064e95e96edacc462ce, type: 3}
+  - {fileID: 4140962260670664931, guid: a49b3a9f4013a0b4e8ab936789b6e54e, type: 3}
+  - {fileID: 4140962260670664931, guid: e7afe69c01f7bd54e814650d6adf6b3e, type: 3}
+  - {fileID: 4140962260670664931, guid: 1055cc0e7eb2c91448a52e3156498ab9, type: 3}
   _emptyPresets:
   - {fileID: 4140962260670664931, guid: a49b3a9f4013a0b4e8ab936789b6e54e, type: 3}
+  - {fileID: 4140962260670664931, guid: d621eb12ad083c846923555de4e5ea8c, type: 3}
 --- !u!4 &1820358569
 Transform:
   m_ObjectHideFlags: 0

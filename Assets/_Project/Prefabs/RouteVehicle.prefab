@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4038660830766366649}
   m_Layer: 0
   m_Name: RouteVehicle
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -47,11 +47,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Drivers.RouteVehicleDriver
   _vehicleAgent: {fileID: 4038660830766366649}
-  _waypointReachDistance: 0.08
-  _finalDestinationDistance: 0.03
-  _vehicleAngularSpeed: 420
-  _vehicleAcceleration: 25
-  _vehicleSpeed: 3
+  _waypointReachDistance: 0.02
+  _finalDestinationDistance: 0.02
+  _vehicleAngularSpeed: 360
+  _vehicleAcceleration: 20
+  _vehicleSpeed: 1.5
 --- !u!195 &4038660830766366649
 NavMeshAgent:
   m_ObjectHideFlags: 0

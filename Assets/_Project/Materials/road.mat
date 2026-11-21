@@ -34,7 +34,7 @@ Material:
     - _FlickerAmount: 0.2
     - _FlickerSpeed: 25
     - _GlitchFrequency: 0.995
-    - _GlitchIntensity: 0.009
+    - _GlitchIntensity: 0.1
     - _GlitchSpeed: 8
     - _RimPower: 1.83
     - _ScanlineSpeed: 3

@@ -10,16 +10,14 @@ namespace _Project.Scripts.Gameplay.Drivers
     {
         private const string ROAD_AREA_NAME = "Road";
         private const int INVALID_AREA_INDEX = -1;
-        private const float WAYPOINT_REACH_THRESHOLD = 0.08f;
-        private const float FINAL_DESTINATION_THRESHOLD = 0.03f;
+        private const float WAYPOINT_REACH_THRESHOLD = 0.02f;
+        private const float FINAL_DESTINATION_THRESHOLD = 0.02f;
         private const float NAVMESH_RECOVERY_RADIUS = 1.5f;
-        private const float DEFAULT_TURN_SPEED = 420f;
-        private const float DEFAULT_ACCELERATION = 25f;
-        private const float DEFAULT_VEHICLE_SPEED = 3f;
+        private const float DEFAULT_TURN_SPEED = 360f;
+        private const float DEFAULT_ACCELERATION = 20f;
+        private const float DEFAULT_VEHICLE_SPEED = 1.5f;
         private const float MIN_SPEED_THRESHOLD = 0.002f;
         private const float STUCK_TIME_THRESHOLD = 2.0f;
-        private const float TURN_SLOWDOWN_ANGLE = 25f;
-        private const float MIN_TURN_SPEED_MULTIPLIER = 0.4f;
         private const float SPEED_SCALE_MULTIPLIER = 0.1f;
 
         [SerializeField] private NavMeshAgent _vehicleAgent;
@@ -55,6 +53,7 @@ namespace _Project.Scripts.Gameplay.Drivers
         private float _stuckTimer;
         private Vector3 _lastPosition;
         private float _baseSpeed;
+        private Vector3 _segmentStartPosition;
 
         private void Awake()
         {
@@ -66,7 +65,7 @@ namespace _Project.Scripts.Gameplay.Drivers
             _baseSpeed = _vehicleSpeed;
             _lastPosition = transform.position;
             ConfigureRoadOnlyAreaMask();
-            ConfigureSmoothCornering();
+            ConfigureStrictPathing();
         }
 
         private void Update()
@@ -86,7 +85,7 @@ namespace _Project.Scripts.Gameplay.Drivers
                 return;
             }
 
-            UpdateRotationAndTurnSpeed();
+            UpdateRotation();
             UpdateStuckDetection();
 
             bool isLastWaypoint = _currentWaypointIndex >= _activeWaypoints.Count - 1;
@@ -97,46 +96,44 @@ namespace _Project.Scripts.Gameplay.Drivers
             Vector3 flatTargetPosition = new Vector3(currentTarget.x, 0f, currentTarget.z);
             float horizontalDistance = Vector3.Distance(flatVehiclePosition, flatTargetPosition);
 
-            bool hasReachedViaAgent = _vehicleAgent.hasPath && _vehicleAgent.remainingDistance <= requiredDistance;
+            bool hasPassedWaypoint = HasPassedTargetPlane(flatVehiclePosition, flatTargetPosition);
 
-            if (horizontalDistance <= requiredDistance || hasReachedViaAgent)
+            if (horizontalDistance <= requiredDistance || hasPassedWaypoint)
             {
+                transform.position = new Vector3(currentTarget.x, transform.position.y, currentTarget.z);
                 AdvanceToNextWaypoint();
             }
         }
 
-        private void UpdateRotationAndTurnSpeed()
+        private bool HasPassedTargetPlane(Vector3 flatVehiclePos, Vector3 flatTargetPos)
         {
-            Vector3 targetPoint = _vehicleAgent.hasPath ? _vehicleAgent.steeringTarget : CurrentTargetPosition;
-            Vector3 direction = targetPoint - transform.position;
+            Vector3 flatStartPos = new Vector3(_segmentStartPosition.x, 0f, _segmentStartPosition.z);
+            Vector3 segmentDir = flatTargetPos - flatStartPos;
+            if (segmentDir.sqrMagnitude <= 0.000001f)
+            {
+                return false;
+            }
+
+            Vector3 toVehicle = flatVehiclePos - flatTargetPos;
+            return Vector3.Dot(segmentDir.normalized, toVehicle) >= 0f;
+        }
+
+        private void UpdateRotation()
+        {
+            Vector3 direction = CurrentTargetPosition - transform.position;
             direction.y = 0f;
 
-            if (direction.sqrMagnitude > 0.000001f)
+            if (direction.sqrMagnitude <= 0.000001f)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(direction.normalized);
-                float angle = Quaternion.Angle(transform.rotation, targetRotation);
-
-                transform.rotation = Quaternion.RotateTowards(
-                    transform.rotation,
-                    targetRotation,
-                    _vehicleAngularSpeed * Time.deltaTime
-                );
-
-                float speedMultiplier = 1f;
-                if (angle > TURN_SLOWDOWN_ANGLE)
-                {
-                    float t = Mathf.InverseLerp(TURN_SLOWDOWN_ANGLE, 180f, angle);
-                    speedMultiplier = Mathf.Lerp(1f, MIN_TURN_SPEED_MULTIPLIER, t);
-                }
-
-                float targetSpeed = _baseSpeed * speedMultiplier;
-                _vehicleAgent.speed = targetSpeed;
-
-                if (_vehicleAgent.velocity.sqrMagnitude > 0.000001f)
-                {
-                    _vehicleAgent.velocity = transform.forward * Mathf.Min(_vehicleAgent.velocity.magnitude, targetSpeed);
-                }
+                return;
             }
+
+            Quaternion targetRotation = Quaternion.LookRotation(direction.normalized);
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                targetRotation,
+                _vehicleAngularSpeed * Time.deltaTime
+            );
         }
 
         public void ConfigureRoadOnlyAreaMask()
@@ -185,7 +182,7 @@ namespace _Project.Scripts.Gameplay.Drivers
             }
 
             ConfigureRoadOnlyAreaMask();
-            ConfigureSmoothCornering();
+            ConfigureStrictPathing();
 
             if (!EnsureAgentIsPlacedOnNavMesh(waypoints[0]))
             {
@@ -199,10 +196,10 @@ namespace _Project.Scripts.Gameplay.Drivers
             }
 
             _currentWaypointIndex = 1;
+            _segmentStartPosition = transform.position;
             _isDriving = true;
             _stuckTimer = 0f;
             _lastPosition = transform.position;
-
             _vehicleAgent.speed = _baseSpeed;
             _vehicleAgent.isStopped = false;
             _vehicleAgent.SetDestination(_activeWaypoints[_currentWaypointIndex]);
@@ -252,13 +249,14 @@ namespace _Project.Scripts.Gameplay.Drivers
         {
             _vehicleSpeed = Mathf.Max(0.005f, speed * SPEED_SCALE_MULTIPLIER);
             _baseSpeed = _vehicleSpeed;
+
             if (_vehicleAgent != null)
             {
                 _vehicleAgent.speed = _baseSpeed;
             }
         }
 
-        private void ConfigureSmoothCornering()
+        private void ConfigureStrictPathing()
         {
             if (_vehicleAgent == null)
             {
@@ -267,6 +265,8 @@ namespace _Project.Scripts.Gameplay.Drivers
 
             _vehicleAgent.updateRotation = false;
             _vehicleAgent.autoBraking = false;
+            _vehicleAgent.stoppingDistance = 0f;
+            _vehicleAgent.radius = 0.01f;
             _vehicleAgent.angularSpeed = _vehicleAngularSpeed;
             _vehicleAgent.acceleration = _vehicleAcceleration;
             _vehicleAgent.speed = _baseSpeed;
@@ -316,6 +316,7 @@ namespace _Project.Scripts.Gameplay.Drivers
         private void AdvanceToNextWaypoint()
         {
             int reachedIndex = _currentWaypointIndex;
+            _segmentStartPosition = _activeWaypoints[reachedIndex];
             _currentWaypointIndex++;
 
             if (_currentWaypointIndex >= _activeWaypoints.Count)
@@ -325,7 +326,6 @@ namespace _Project.Scripts.Gameplay.Drivers
 
                 if (_vehicleAgent != null && _vehicleAgent.isActiveAndEnabled && _vehicleAgent.isOnNavMesh)
                 {
-                    _vehicleAgent.autoBraking = true;
                     _vehicleAgent.isStopped = true;
                     _vehicleAgent.ResetPath();
                 }
@@ -334,9 +334,6 @@ namespace _Project.Scripts.Gameplay.Drivers
                 OnDestinationReached?.Invoke();
                 return;
             }
-
-            bool isApproachingFinalPoint = _currentWaypointIndex == _activeWaypoints.Count - 1;
-            _vehicleAgent.autoBraking = isApproachingFinalPoint;
 
             if (EnsureAgentIsPlacedOnNavMesh(transform.position))
             {
