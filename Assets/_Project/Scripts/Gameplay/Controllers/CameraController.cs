@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -6,11 +6,13 @@ namespace _Project.Scripts.Gameplay.Controllers
 {
     public class CameraController : MonoBehaviour
     {
+        [SerializeField] private RoutePlannerController _routePlannerController;
+        [SerializeField] private FadeController _fadeController;
         [SerializeField] private CinemachineBrain _cinemachineBrain;
         [SerializeField] private CinemachineCamera[] _cameras;
         [SerializeField] private Changes[] _changes;
-        [SerializeField] private RoutePlannerController _routePlannerController;
         [SerializeField] private GameObject _zonesPanel;
+        [SerializeField] private int _cameraIDAfterReset;
         public bool CanMove { get; private set; } = true;
 
         private void Update()
@@ -47,6 +49,21 @@ namespace _Project.Scripts.Gameplay.Controllers
                     obj.SetActive(true);
                 }
             }
+        }
+        
+        public void ResetCamera() => ChangeCamera(_cameraIDAfterReset);
+
+        public void ResetCameraWithAnimation()
+        {
+            StartCoroutine(ResetCameraWithAnimationRoutine());
+        }
+
+        public IEnumerator ResetCameraWithAnimationRoutine()
+        {
+            yield return _fadeController.FadeRoutine(1f, 1f);
+            ResetCamera();
+            yield return new WaitForSecondsRealtime(1.5f);
+            yield return _fadeController.FadeRoutine(0f, 1f);
         }
 
         public void SetCanMove(bool value)

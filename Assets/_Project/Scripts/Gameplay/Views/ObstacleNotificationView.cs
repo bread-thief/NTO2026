@@ -11,9 +11,7 @@ namespace _Project.Scripts.Gameplay.Views
     {
         [SerializeField] private TimeController _timeController;
         [SerializeField] private RoadObstacleController _obstacleController;
-        //[SerializeField] private TMP_Text _messageText;
         [SerializeField] private TMP_Text _timeText;
-        [SerializeField] private float _messageDuration = 5f;
         [SerializeField] private Radio.Radio _radio;
 
         [SerializeField] private float _messageTimer = 10f;
@@ -65,17 +63,10 @@ namespace _Project.Scripts.Gameplay.Views
         {
             if (_messageTimer <= 0f)
             {
-                ShowMessage("Дарова братки йоу бибика рулит");
-                this.enabled = false;
                 return;
             }
 
             _messageTimer -= UnityTime.deltaTime;
-
-            //if (_messageTimer <= 0f && _messageText != null)
-            //{
-            //    _messageText.text = string.Empty;
-            //}
         }
 
         private void HandleTimeChanged(Time currentTime)
@@ -113,16 +104,7 @@ namespace _Project.Scripts.Gameplay.Views
 
         private void ShowMessage(string message)
         {
-            //if (_messageText == null)
-            //{
-            //    return;
-            //}
-            
             _radio.SendMessageByRadio(message);
-            
-            //_messageText.text = message;
-            //_messageTimer = _messageDuration;
-            
         }
     }
 }

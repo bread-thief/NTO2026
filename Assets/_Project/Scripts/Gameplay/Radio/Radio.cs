@@ -89,7 +89,6 @@ namespace _Project.Scripts.Gameplay.Radio
 
         public void ChangeMusic(int musicID)
         {
-
             _audioSource.clip = _music[musicID]; 
             _audioSource.Play();
             IsPlayingMusic = true;
@@ -99,7 +98,6 @@ namespace _Project.Scripts.Gameplay.Radio
         // Deprecated. Best practice is using ShufflePlaylist()
         public void ChangeMusicByRandom()
         {
-            
             _audioSource.PlayOneShot(_music[Random.Range(0, _music.Length - 1)]);
             IsPlayingMusic = true;
         }

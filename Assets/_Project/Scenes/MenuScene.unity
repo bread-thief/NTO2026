@@ -311,6 +311,8 @@ MonoBehaviour:
   _audioSource: {fileID: 5768213}
   _music:
   - {fileID: 8300000, guid: a5d3ddc7e4cd9c58b89702ae53303898, type: 3}
+  _playOnStart: 1
+  _radioUI: {fileID: 0}
 --- !u!1 &133180020
 GameObject:
   m_ObjectHideFlags: 0
