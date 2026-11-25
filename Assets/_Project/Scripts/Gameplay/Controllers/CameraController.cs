@@ -7,6 +7,7 @@ namespace _Project.Scripts.Gameplay.Controllers
     public class CameraController : MonoBehaviour
     {
         [SerializeField] private RoutePlannerController _routePlannerController;
+        [SerializeField] private DeliveryShiftController _deliveryShiftController;
         [SerializeField] private FadeController _fadeController;
         [SerializeField] private CinemachineBrain _cinemachineBrain;
         [SerializeField] private CinemachineCamera[] _cameras;
@@ -14,6 +15,16 @@ namespace _Project.Scripts.Gameplay.Controllers
         [SerializeField] private GameObject _zonesPanel;
         [SerializeField] private int _cameraIDAfterReset;
         public bool CanMove { get; private set; } = true;
+        
+        private void OnEnable()
+        {
+            _deliveryShiftController.OnDeliveryCompleted += ResetCameraWithAnimation;
+        }
+        
+        private void OnDisable()
+        {
+            _deliveryShiftController.OnDeliveryCompleted -= ResetCameraWithAnimation;
+        }
 
         private void Update()
         {
@@ -53,7 +64,7 @@ namespace _Project.Scripts.Gameplay.Controllers
         
         public void ResetCamera() => ChangeCamera(_cameraIDAfterReset);
 
-        public void ResetCameraWithAnimation()
+        public void ResetCameraWithAnimation(int i = 0)
         {
             StartCoroutine(ResetCameraWithAnimationRoutine());
         }
