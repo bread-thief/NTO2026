@@ -2759,7 +2759,7 @@ MonoBehaviour:
   _obstacleController: {fileID: 994121084}
   _timeText: {fileID: 1753180869}
   _radio: {fileID: 654364007}
-  _messageTimer: 10
+  _messageTimer: 0
 --- !u!1 &666602622
 GameObject:
   m_ObjectHideFlags: 0
