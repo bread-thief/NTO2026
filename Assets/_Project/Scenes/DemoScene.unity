@@ -1555,7 +1555,7 @@ MonoBehaviour:
     <ToEnable>k__BackingField:
     - {fileID: 1699384462}
   _zonesPanel: {fileID: 871361542}
-  _cameraIDAfterReset: 4
+  _cameraIDAfterReset: 3
 --- !u!1 &375688575
 GameObject:
   m_ObjectHideFlags: 0
