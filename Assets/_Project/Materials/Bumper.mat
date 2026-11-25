@@ -111,9 +111,9 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _FlickerAmount: 0.2
+    - _FlickerAmount: 0.05
     - _FlickerSpeed: 25
-    - _GlitchFrequency: 0.995
+    - _GlitchFrequency: 1
     - _GlitchIntensity: 0.1
     - _GlitchSpeed: 8
     - _GlossMapScale: 0

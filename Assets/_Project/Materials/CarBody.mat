@@ -83,7 +83,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
-    - _Alpha: 0.45
+    - _Alpha: 1
     - _AlphaClip: 0
     - _AlphaToMask: 0
     - _Blend: 0
@@ -98,9 +98,9 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _FlickerAmount: 0.2
+    - _FlickerAmount: 0.05
     - _FlickerSpeed: 25
-    - _GlitchFrequency: 0.995
+    - _GlitchFrequency: 1
     - _GlitchIntensity: 0.1
     - _GlitchSpeed: 8
     - _GlossMapScale: 0
