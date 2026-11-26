@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 
-namespace _Project.Scripts.Gameplay.Radio
+namespace _Project.Scripts.Meta.UI
 {
     public class RadioUI : MonoBehaviour
     {
