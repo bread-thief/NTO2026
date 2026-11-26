@@ -15,7 +15,12 @@ namespace _Project.Scripts.Gameplay.Makers
         [SerializeField] private LayerMask _mapLayer;
         [SerializeField] private float _maxRaycastDistance = 1000f;
         [SerializeField] private GameObject _noteInputPanel;
-        [SerializeField] private TMP_InputField _noteInputField;
+        [SerializeField] private TMP_Text _hourText;
+        [SerializeField] private TMP_Text _minuteText;
+        [SerializeField] private Button _upHourButton;
+        [SerializeField] private Button _upMinuteButton;
+        [SerializeField] private Button _downHourButton;
+        [SerializeField] private Button _downMinuteButton;
         [SerializeField] private Button _noteAcceptButton;
         [SerializeField] private Button _noteCancelButton;
         [SerializeField] private Image _noteColorImage;
@@ -34,6 +39,8 @@ namespace _Project.Scripts.Gameplay.Makers
         private bool _isAwaitingNote;
         private Vector3 _pendingPinWorldPosition;
         private Color _pendingColor;
+        private int _hour = 10;
+        private int _minute = 0;
 
         private void Awake()
         {
@@ -62,7 +69,93 @@ namespace _Project.Scripts.Gameplay.Makers
                 _noteCancelButton.onClick.AddListener(CancelNote);
             }
 
+            if (_upHourButton != null)
+            {
+                _upHourButton.onClick.AddListener(() => Up(true));
+            }
+
+            if (_upMinuteButton != null)
+            {
+                _upMinuteButton.onClick.AddListener(() => Up());
+            }
+
+            if (_downHourButton != null)
+            {
+                _downHourButton.onClick.AddListener(() => Down(true));
+            }
+
+            if (_downMinuteButton != null)
+            {
+                _downMinuteButton.onClick.AddListener(() => Down());
+            }
+
             BuildAvailableSlots();
+        }
+
+        private void Up(bool isHour = false)
+        {
+            if (isHour)
+            {
+                _hour++;
+            }
+            else
+            {
+                _minute++;
+            }
+
+            if (_hour <= 0)
+            {
+                _hour = 24;
+            }
+            else if (_hour >= 24)
+            {
+                _hour = 1;
+            }
+
+            if (_minute <= 0)
+            {
+                _minute = 60;
+            }
+            else if (_minute >= 24)
+            {
+                _minute = 0;
+            }
+
+            _hourText.text = $"{_hour:00}";
+            _minuteText.text = $"{_minute:00}";
+        }
+
+        private void Down(bool isHour = false)
+        {
+            if (isHour)
+            {
+                _hour--;
+            }
+            else
+            {
+                _minute--;
+            }
+
+            if (_hour <= 0)
+            {
+                _hour = 24;
+            }
+            else if (_hour >= 24)
+            {
+                _hour = 1;
+            }
+
+            if (_minute <= 0)
+            {
+                _minute = 60;
+            }
+            else if (_minute >= 24)
+            {
+                _minute = 0;
+            }
+
+            _hourText.text = $"{_hour:00}";
+            _minuteText.text = $"{_minute:00}";
         }
 
         private void OnEnable()
@@ -171,12 +264,12 @@ namespace _Project.Scripts.Gameplay.Makers
                 _noteColorImage.color = _pendingColor;
             }
 
-            if (_noteInputField != null)
-            {
-                _noteInputField.text = string.Empty;
-            }
-
             _noteInputPanel.SetActive(true);
+            _hour = 10;
+            _minute = 0;
+
+            _hourText.text = $"{_hour:00}";
+            _minuteText.text = $"{_minute:00}";
         }
 
         private void ConfirmNote()
@@ -186,7 +279,7 @@ namespace _Project.Scripts.Gameplay.Makers
                 return;
             }
 
-            string noteText = _noteInputField != null ? _noteInputField.text : string.Empty;
+            string noteText = $"{_hour:00}:{_minute:00}"; ;
 
             if (string.IsNullOrWhiteSpace(noteText))
             {
