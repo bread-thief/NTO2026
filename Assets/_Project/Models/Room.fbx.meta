@@ -3,7 +3,207 @@ guid: 85503afe4c98bdf40ba5c851bd60ddd1
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 3DMapPlace1
+    second: {fileID: 2100000, guid: c04f9f332e8a7074cb4053de854e6053, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 3DMapPlace2
+    second: {fileID: 2100000, guid: ea81ef88713528a47b9b34ff85b8fa5d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Board1
+    second: {fileID: 2100000, guid: 6e748a091aef1f744ae0f4d33553c8b1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Board2
+    second: {fileID: 2100000, guid: 98cd19d1e11e20649a86fa4a0c9c941a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BookBlue
+    second: {fileID: 2100000, guid: 4d98fd111cd91024fb78a05653d408bb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BookGreen
+    second: {fileID: 2100000, guid: 07402164be3daac4b8529eabc9fb343a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BookPapers
+    second: {fileID: 2100000, guid: 5a0d57729b0812042a26548c074b0665, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BookPurple
+    second: {fileID: 2100000, guid: 98ca03f8f36a8f24ea03b194d39c6cf9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BookRed
+    second: {fileID: 2100000, guid: a21a9d7e65439d04c91e5cb4611908a6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ClockDisplay
+    second: {fileID: 2100000, guid: 0209322de8dc2c947bb918c91ceb82fd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Floor
+    second: {fileID: 2100000, guid: d13aea901b806dc479a18e1af98eeeb7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: GoldTrophy
+    second: {fileID: 2100000, guid: 0dc453014807c1345a3d7bc66cd1203c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Jar
+    second: {fileID: 2100000, guid: 1303aa32a9bfe404396f28efbf3f5fdc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: LampGreen
+    second: {fileID: 2100000, guid: b844074ab7c326445a50547134abd186, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: LampGreen4
+    second: {fileID: 2100000, guid: 223a83ff4ae2bb0478fe560180ac5a23, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: LampGreenAgain
+    second: {fileID: 2100000, guid: f0539bf6a2fac4245bb435e46d97f1a8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: LampMoreGreen
+    second: {fileID: 2100000, guid: 337a8f1461ce61b48854ef7d56fae572, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: LampStick
+    second: {fileID: 2100000, guid: b0d7e2bb3f9084045914f6db7e1d3158, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: OldPC
+    second: {fileID: 2100000, guid: 560cd93482acea64f9c7681d60d69ba2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: OldPCDisplay
+    second: {fileID: 2100000, guid: 5089e4f57669db7449ac7364b9764157, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Paper
+    second: {fileID: 2100000, guid: 54da3def548eaa745bdf24426f095da8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PaperGray
+    second: {fileID: 2100000, guid: ad2285cd6fca8654e8328612de0deaec, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Photo
+    second: {fileID: 2100000, guid: 8747d212c31cee54d8c56c68c4eabaff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PhotoFrame
+    second: {fileID: 2100000, guid: 4165075dbb048ee42a44c9363e9f01d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plintus
+    second: {fileID: 2100000, guid: 9d63aa4c52cbe6d4c8bc511315a9cd9c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Poster
+    second: {fileID: 2100000, guid: 0a29f881111c04a42ac8b074558133a2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Poster2
+    second: {fileID: 2100000, guid: 45114cbcc48969c4fae473e36712b86f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Potolok
+    second: {fileID: 2100000, guid: 1cb1b04c976ce664b93d7631693686e8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Radio
+    second: {fileID: 2100000, guid: 6bf15d2b83ec4184c899660331feebd2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: RadioDinamic
+    second: {fileID: 2100000, guid: f4c6a1ab21d81b94389412d743600ed5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: RadioGray
+    second: {fileID: 2100000, guid: 8022914814abcc94b9cf17237d089698, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shelf
+    second: {fileID: 2100000, guid: f41a2b01390935d48b1f43280cc55305, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ShelfFastening
+    second: {fileID: 2100000, guid: 3fa7a26303335434bbf80589d8c719a2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Table
+    second: {fileID: 2100000, guid: 3cf001344bd02d74ca461ae73e839c98, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TableLegs
+    second: {fileID: 2100000, guid: 80f1c4a3d0442784dbc7741052a9f2db, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tablet
+    second: {fileID: 2100000, guid: 8117352f4cae82d41a8052645db7c859, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TabletButton
+    second: {fileID: 2100000, guid: fc9b30a00aa05be44848bf82dc7d285c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TabletDisplay
+    second: {fileID: 2100000, guid: 4fc57433fb58eb5489b6432aed238fc1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Walls
+    second: {fileID: 2100000, guid: e7194c7f52778cb4b9b6198bbdb05c1a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "\u0421lock"
+    second: {fileID: 2100000, guid: c772e690d8bb0b54690b17039f4eeeb8, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -97,7 +297,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.19999999
+    globalScale: 20
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
