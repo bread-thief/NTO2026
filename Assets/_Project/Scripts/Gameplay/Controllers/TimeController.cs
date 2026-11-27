@@ -24,6 +24,7 @@ namespace _Project.Scripts.Gameplay.Controllers
         public Time ShiftEnd => _shiftEnd;
         public bool IsShiftActive { get; private set; }
         public bool IsShiftEnded { get; private set; }
+        public float RealSecondsPerGameMinute => _realSecondsPerGameMinute;
 
         private float _accumulatedSeconds;
 

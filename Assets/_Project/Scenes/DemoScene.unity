@@ -288,6 +288,10 @@ MonoBehaviour:
   _timeController: {fileID: 132634448}
   _generator: {fileID: 366899765}
   _streetNamer: {fileID: 1788906750}
+  _vehicleDriver: {fileID: 0}
+  _routePlannerController: {fileID: 1379558088}
+  _cameraController: {fileID: 719648902}
+  _fadeController: {fileID: 1038528393}
   _obstaclePrefab: {fileID: 220787748897145492, guid: 0caa7a4c2e322734a99dc65aac933bb4, type: 3}
   _defaultConfig: {fileID: 11400000, guid: f9ce73bdb4db27d4182fb757136a75f4, type: 2}
   _availableConfigs:
@@ -2549,7 +2553,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f86417f2874daaf4b90c3de93a7239ea, type: 2}
+  - {fileID: 2100000, guid: 5072e338bc55fa84d8e094af09d6847a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3145,7 +3149,6 @@ MonoBehaviour:
   _obstacleController: {fileID: 27550234}
   _timeText: {fileID: 1139438484}
   _radio: {fileID: 654364007}
-  _messageTimer: 0
 --- !u!82 &654364011
 AudioSource:
   m_ObjectHideFlags: 0
@@ -6863,10 +6866,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Generators.RoutePlannerController
   _mainCamera: {fileID: 719648901}
   _generator: {fileID: 366899765}
+  _navMeshBaker: {fileID: 0}
   _playerInputHandler: {fileID: 1145914261}
   _pointANode: {fileID: 0}
   _pointBNode: {fileID: 0}
   _vehicleDriver: {fileID: 0}
+  _obstacleController: {fileID: 27550234}
   _routeLineRenderer: {fileID: 577030719}
   _roadClickLayers:
     serializedVersion: 2

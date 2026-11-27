@@ -142,61 +142,126 @@ namespace _Project.Scripts.Gameplay.Namers
             FillRemainingRoadCellsFromNeighbors(width, height);
         }
 
-        public string GetLandmarkNearCell(Vector2Int cell, string excludedAddress, int searchRadius = 2)
+        public string GetLandmarkNearCell(Vector2Int cell, string excludedAddress)
         {
-            if (_generator == null)
+            if (_generator == null || _generator.GetSpawnedPresetAt(cell.x, cell.y) == null)
             {
                 return GetRandomStreetWord();
             }
 
+            CityBlockPreset preset = _generator.GetSpawnedPresetAt(cell.x, cell.y);
+            int rotation = _generator.GetSpawnedRotationAt(cell.x, cell.y);
+
+            Vector2Int gridDimensions = _generator.GetGridDimensions;
+            Vector2Int[] offsets =
+            {
+                new Vector2Int(0, 1),
+                new Vector2Int(1, 0),
+                new Vector2Int(0, -1),
+                new Vector2Int(-1, 0)
+            };
+            Direction[] directions = { Direction.North, Direction.East, Direction.South, Direction.West };
+
+            List<string> perpendicular = new List<string>();
+            List<string> other = new List<string>();
+
+            for (int index = 0; index < offsets.Length; index++)
+            {
+                if (!preset.HasRoad(directions[index], rotation))
+                {
+                    continue;
+                }
+
+                Vector2Int neighbor = cell + offsets[index];
+
+                if (neighbor.x < 0 || neighbor.x >= gridDimensions.x || neighbor.y < 0 || neighbor.y >= gridDimensions.y)
+                {
+                    continue;
+                }
+
+                if (!_cellStreetAddresses.TryGetValue(neighbor, out string neighborAddress))
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(neighborAddress) || neighborAddress == excludedAddress)
+                {
+                    continue;
+                }
+
+                bool isHorizontalDirection = directions[index] == Direction.East || directions[index] == Direction.West;
+                bool isBlockedHorizontal = IsAddressHorizontal(excludedAddress);
+
+                if (isHorizontalDirection != isBlockedHorizontal)
+                {
+                    if (!perpendicular.Contains(neighborAddress))
+                    {
+                        perpendicular.Add(neighborAddress);
+                    }
+                }
+                else if (!other.Contains(neighborAddress))
+                {
+                    other.Add(neighborAddress);
+                }
+            }
+
+            if (perpendicular.Count > 0)
+            {
+                return perpendicular[UnityEngine.Random.Range(0, perpendicular.Count)];
+            }
+
+            if (other.Count > 0)
+            {
+                return other[UnityEngine.Random.Range(0, other.Count)];
+            }
+
+            return GetRandomStreetWord();
+        }
+
+        private bool IsAddressHorizontal(string address)
+        {
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                return false;
+            }
+
             Vector2Int gridDimensions = _generator.GetGridDimensions;
 
-            List<string> neighbors = new List<string>();
-
-            for (int offsetX = -searchRadius; offsetX <= searchRadius; offsetX++)
+            for (int columnIndex = 0; columnIndex < gridDimensions.x; columnIndex++)
             {
-                for (int offsetY = -searchRadius; offsetY <= searchRadius; offsetY++)
+                for (int rowIndex = 0; rowIndex < gridDimensions.y; rowIndex++)
                 {
-                    if (offsetX == 0 && offsetY == 0)
+                    Vector2Int cell = new Vector2Int(columnIndex, rowIndex);
+
+                    if (!_cellStreetAddresses.TryGetValue(cell, out string cellAddress))
                     {
                         continue;
                     }
 
-                    Vector2Int neighbor = new Vector2Int(cell.x + offsetX, cell.y + offsetY);
-
-                    if (neighbor.x < 0 || neighbor.x >= gridDimensions.x || neighbor.y < 0 || neighbor.y >= gridDimensions.y)
+                    if (cellAddress != address)
                     {
                         continue;
                     }
 
-                    if (!_cellStreetAddresses.TryGetValue(neighbor, out string neighborAddress))
+                    CityBlockPreset preset = _generator.GetSpawnedPresetAt(columnIndex, rowIndex);
+
+                    if (preset == null)
                     {
                         continue;
                     }
 
-                    if (string.IsNullOrWhiteSpace(neighborAddress))
-                    {
-                        continue;
-                    }
+                    int rotation = _generator.GetSpawnedRotationAt(columnIndex, rowIndex);
+                    bool hasEast = preset.HasRoad(Direction.East, rotation);
+                    bool hasWest = preset.HasRoad(Direction.West, rotation);
 
-                    if (!string.IsNullOrWhiteSpace(excludedAddress) && neighborAddress == excludedAddress)
+                    if (hasEast || hasWest)
                     {
-                        continue;
-                    }
-
-                    if (!neighbors.Contains(neighborAddress))
-                    {
-                        neighbors.Add(neighborAddress);
+                        return true;
                     }
                 }
             }
 
-            if (neighbors.Count > 0)
-            {
-                return neighbors[UnityEngine.Random.Range(0, neighbors.Count)];
-            }
-
-            return GetRandomStreetWord();
+            return false;
         }
 
         public string GetRandomStreetWord()

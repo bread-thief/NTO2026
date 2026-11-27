@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using _Project.Scripts.Gameplay.Controllers;
+using _Project.Scripts.Gameplay.Drivers;
 using _Project.Scripts.Gameplay.Generators;
 using _Project.Scripts.Gameplay.Namers;
 using UnityEngine;
@@ -11,15 +13,18 @@ namespace _Project.Scripts.Gameplay.Obstacles
 {
     public class RoadObstacleController : MonoBehaviour
     {
-        private const int MIN_ALTERNATIVE_PATH_DISTANCE = 3;
-        private const int MAX_ALTERNATIVE_BFS_NODES = 200;
+        private const int MAX_ALTERNATIVE_BFS_NODES = 4000;
         private const int MAX_PICK_ATTEMPTS = 32;
         private const float OBSTACLE_SPAWN_HEIGHT = 10f;
-        private const int LANDMARK_SEARCH_RADIUS = 2;
+        private const int TRIP_BUDGET_MINUTES = 60;
 
         [SerializeField] private TimeController _timeController;
         [SerializeField] private CityGenerator _generator;
         [SerializeField] private CityStreetNamer _streetNamer;
+        [SerializeField] private RouteVehicleDriver _vehicleDriver;
+        [SerializeField] private RoutePlannerController _routePlannerController;
+        [SerializeField] private CameraController _cameraController;
+        [SerializeField] private FadeController _fadeController;
         [SerializeField] private GameObject _obstaclePrefab;
         [SerializeField] private ObstacleConfig _defaultConfig;
         [SerializeField] private List<ObstacleConfig> _availableConfigs = new List<ObstacleConfig>();
@@ -49,6 +54,21 @@ namespace _Project.Scripts.Gameplay.Obstacles
             {
                 _streetNamer = FindAnyObjectByType<CityStreetNamer>();
             }
+
+            if (_routePlannerController == null)
+            {
+                _routePlannerController = FindAnyObjectByType<RoutePlannerController>();
+            }
+
+            if (_cameraController == null)
+            {
+                _cameraController = FindAnyObjectByType<CameraController>();
+            }
+
+            if (_fadeController == null)
+            {
+                _fadeController = FindAnyObjectByType<FadeController>();
+            }
         }
 
         private void OnEnable()
@@ -76,6 +96,11 @@ namespace _Project.Scripts.Gameplay.Obstacles
                 return;
             }
 
+            if (_vehicleDriver == null)
+            {
+                _vehicleDriver = FindAnyObjectByType<RouteVehicleDriver>();
+            }
+
             ObstacleConfig selectedConfig = PickConfig();
 
             if (selectedConfig == null)
@@ -88,7 +113,7 @@ namespace _Project.Scripts.Gameplay.Obstacles
                 return;
             }
 
-            if (!HasAlternativeRoute(spawnCell, targetCell))
+            if (!HasAlternativeRoute(spawnCell, travelledRoute))
             {
                 return;
             }
@@ -101,7 +126,7 @@ namespace _Project.Scripts.Gameplay.Obstacles
             }
 
             string landmark = _streetNamer != null
-                ? _streetNamer.GetLandmarkNearCell(spawnCell, blockedStreet, LANDMARK_SEARCH_RADIUS)
+                ? _streetNamer.GetLandmarkNearCell(spawnCell, blockedStreet)
                 : string.Empty;
 
             Time removalTime = _timeController != null
@@ -325,20 +350,34 @@ namespace _Project.Scripts.Gameplay.Obstacles
             return result;
         }
 
-        private bool HasAlternativeRoute(Vector2Int blockedCell, Vector2Int targetCell)
+        private bool HasAlternativeRoute(Vector2Int blockedCell, IReadOnlyList<Vector3> travelledRoute)
         {
-            if (_generator == null)
+            if (_generator == null || travelledRoute == null || travelledRoute.Count < 2)
             {
                 return false;
             }
 
+            Vector2Int routeStart = _generator.GetCellCoordinatesFromWorldPosition(travelledRoute[0]);
+            Vector2Int routeEnd = _generator.GetCellCoordinatesFromWorldPosition(travelledRoute[travelledRoute.Count - 1]);
+
+            if (routeStart == blockedCell || routeEnd == blockedCell)
+            {
+                return false;
+            }
+
+            return HasRoadPathExcludingCell(routeStart, routeEnd, blockedCell);
+        }
+
+        private bool HasRoadPathExcludingCell(Vector2Int startCell, Vector2Int endCell, Vector2Int excludedCell)
+        {
             Vector2Int gridDimensions = _generator.GetGridDimensions;
             Queue<Vector2Int> frontier = new Queue<Vector2Int>();
             HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
 
-            frontier.Enqueue(blockedCell);
-            visited.Add(blockedCell);
+            frontier.Enqueue(startCell);
+            visited.Add(startCell);
 
+            Direction[] directions = { Direction.North, Direction.East, Direction.South, Direction.West };
             int exploredNodes = 0;
 
             while (frontier.Count > 0)
@@ -351,15 +390,18 @@ namespace _Project.Scripts.Gameplay.Obstacles
                     break;
                 }
 
+                if (current == endCell)
+                {
+                    return true;
+                }
+
                 CityBlockPreset currentPreset = _generator.GetSpawnedPresetAt(current.x, current.y);
                 int currentRotation = _generator.GetSpawnedRotationAt(current.x, current.y);
 
-                if (currentPreset == null)
+                if (currentPreset == null || currentPreset.RoadCount == 0)
                 {
                     continue;
                 }
-
-                Direction[] directions = { Direction.North, Direction.East, Direction.South, Direction.West };
 
                 for (int index = 0; index < directions.Length; index++)
                 {
@@ -373,6 +415,11 @@ namespace _Project.Scripts.Gameplay.Obstacles
                     Vector2Int neighbor = current + GetDirectionOffset(direction);
 
                     if (neighbor.x < 0 || neighbor.x >= gridDimensions.x || neighbor.y < 0 || neighbor.y >= gridDimensions.y)
+                    {
+                        continue;
+                    }
+
+                    if (neighbor == excludedCell)
                     {
                         continue;
                     }
@@ -402,7 +449,7 @@ namespace _Project.Scripts.Gameplay.Obstacles
                 }
             }
 
-            return visited.Count >= MIN_ALTERNATIVE_PATH_DISTANCE;
+            return false;
         }
 
         private void HandleObstacleHit(RoadObstacle obstacle, int penaltyMinutes)
@@ -412,13 +459,79 @@ namespace _Project.Scripts.Gameplay.Obstacles
                 return;
             }
 
-            _timeController.AddMinutes(penaltyMinutes);
+            obstacle.OnPlayerHit -= HandleObstacleHit;
+
+            StartCoroutine(ObstacleHitSequenceRoutine(obstacle, penaltyMinutes));
+        }
+
+        private IEnumerator ObstacleHitSequenceRoutine(RoadObstacle obstacle, int penaltyMinutes)
+        {
+            if (obstacle == null)
+            {
+                yield break;
+            }
+
+            GameObject obstacleObject = obstacle.gameObject;
+
+            if (_vehicleDriver != null)
+            {
+                _vehicleDriver.StopAndReset();
+            }
+
+            yield return obstacle.WaitForBlinkFinished();
+
+            if (obstacle == null || obstacleObject == null)
+            {
+                yield break;
+            }
+
+            Vector3 targetPosition = obstacle.WorldPosition;
+
+            if (_routePlannerController != null && _routePlannerController.PointBNode != null)
+            {
+                targetPosition = _routePlannerController.PointBNode.RoadNavMeshPosition;
+            }
+
+            if (_fadeController != null)
+            {
+                yield return _fadeController.FadeRoutine(1f, 1f);
+            }
+
+            if (_vehicleDriver != null)
+            {
+                _vehicleDriver.TeleportAndStop(targetPosition);
+            }
+
+            _timeController.AddMinutes(penaltyMinutes + TRIP_BUDGET_MINUTES);
+
             OnPenaltyApplied?.Invoke(obstacle, penaltyMinutes);
 
-            obstacle.OnPlayerHit -= HandleObstacleHit;
-            _activeObstacles.Remove(obstacle);
-            obstacle.Remove();
-            Destroy(obstacle.gameObject);
+            if (_routePlannerController != null)
+            {
+                _routePlannerController.CompleteTripAfterPenalty();
+            }
+
+            if (_cameraController != null)
+            {
+                yield return _cameraController.ResetCameraWithAnimationRoutine();
+            }
+
+            if (_fadeController != null)
+            {
+                yield return _fadeController.FadeRoutine(0f, 1f);
+            }
+
+            if (obstacle != null)
+            {
+                _activeObstacles.Remove(obstacle);
+                obstacle.OnPlayerHit -= HandleObstacleHit;
+                obstacle.Remove();
+            }
+
+            if (obstacleObject != null)
+            {
+                Destroy(obstacleObject);
+            }
         }
 
         private void HandleTimeChanged(Time currentTime)
@@ -443,6 +556,11 @@ namespace _Project.Scripts.Gameplay.Obstacles
             for (int index = 0; index < _obstaclesPendingRemoval.Count; index++)
             {
                 RoadObstacle obstacle = _obstaclesPendingRemoval[index];
+
+                if (obstacle == null)
+                {
+                    continue;
+                }
 
                 obstacle.OnPlayerHit -= HandleObstacleHit;
                 _activeObstacles.Remove(obstacle);

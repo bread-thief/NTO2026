@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4038660830766366649}
   - component: {fileID: -3424807186325661931}
   - component: {fileID: 6951335120371849904}
+  - component: {fileID: 3922556286138003161}
   m_Layer: 0
   m_Name: RouteVehicle
   m_TagString: Player
@@ -100,6 +101,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53945c3fc67aa77498de7202e5a64031, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Obstacles.RouteVehicleDriverTagInitializer
+--- !u!65 &3922556286138003161
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4728075061444052668}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.2972623, y: 0.3006063, z: 0.52806324}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &1945855478808635925
 PrefabInstance:
   m_ObjectHideFlags: 0

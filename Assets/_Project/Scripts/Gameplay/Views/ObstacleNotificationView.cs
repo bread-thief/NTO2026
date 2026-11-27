@@ -3,7 +3,6 @@ using _Project.Scripts.Gameplay.Obstacles;
 using TMPro;
 using UnityEngine;
 using Time = _Project.Scripts.Gameplay.Controllers.Time;
-using UnityTime = UnityEngine.Time;
 
 namespace _Project.Scripts.Gameplay.Views
 {
@@ -13,8 +12,6 @@ namespace _Project.Scripts.Gameplay.Views
         [SerializeField] private RoadObstacleController _obstacleController;
         [SerializeField] private TMP_Text _timeText;
         [SerializeField] private Radio.Radio _radio;
-
-        [SerializeField] private float _messageTimer = 10f;
 
         private void Awake()
         {
@@ -59,16 +56,6 @@ namespace _Project.Scripts.Gameplay.Views
             }
         }
 
-        private void Update()
-        {
-            if (_messageTimer <= 0f)
-            {
-                return;
-            }
-
-            _messageTimer -= UnityTime.deltaTime;
-        }
-
         private void HandleTimeChanged(Time currentTime)
         {
             if (_timeText != null)
@@ -84,7 +71,7 @@ namespace _Project.Scripts.Gameplay.Views
                 return;
             }
 
-            ShowMessage($"{obstacle.BuildDisplayMessage()}. Будет убрано в {obstacle.RemovalTime}");
+            ShowMessage(obstacle.BuildDisplayMessage());
         }
 
         private void HandleObstacleRemoved(RoadObstacle obstacle)
@@ -99,11 +86,21 @@ namespace _Project.Scripts.Gameplay.Views
 
         private void HandlePenaltyApplied(RoadObstacle obstacle, int penaltyMinutes)
         {
-            ShowMessage($"Авария! Потеряно {penaltyMinutes} минут");
+            if (obstacle == null)
+            {
+                return;
+            }
+
+            ShowMessage($"Машина попала под преграду на {obstacle.BlockedStreetAddress}. Потеряно {penaltyMinutes} минут.");
         }
 
         private void ShowMessage(string message)
         {
+            if (_radio == null)
+            {
+                return;
+            }
+
             _radio.SendMessageByRadio(message);
         }
     }

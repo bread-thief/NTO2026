@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using Time = _Project.Scripts.Gameplay.Controllers.Time;
 
@@ -18,6 +19,9 @@ namespace _Project.Scripts.Gameplay.Obstacles
         [SerializeField] private Time _removalTime;
         [SerializeField] private int _penaltyMinutes = 30;
         [SerializeField] private bool _isActive = true;
+        [SerializeField] private Renderer _blinkRenderer;
+        [SerializeField] private float _blinkInterval = 0.2f;
+        [SerializeField] private int _blinkCount = 6;
 
         public event Action<RoadObstacle, int> OnPlayerHit;
         public event Action<RoadObstacle> OnRemoved;
@@ -32,6 +36,21 @@ namespace _Project.Scripts.Gameplay.Obstacles
         public ObstaclePlacementType PlacementType { get; private set; } = ObstaclePlacementType.Unknown;
 
         private Collider _collider;
+        private Coroutine _blinkRoutine;
+        private bool _wasHit;
+
+        private void Awake()
+        {
+            if (_blinkRenderer == null)
+            {
+                _blinkRenderer = GetComponentInChildren<Renderer>();
+            }
+
+            if (_blinkRenderer != null)
+            {
+                _blinkRenderer.enabled = false;
+            }
+        }
 
         public void Initialize(string blockedStreetAddress, string referenceLandmark, ObstaclePlacementType placementType, Time removalTime, int penaltyMinutes)
         {
@@ -47,6 +66,7 @@ namespace _Project.Scripts.Gameplay.Obstacles
             _penaltyMinutes = penaltyMinutes;
             DisplayName = displayName;
             _isActive = true;
+            _wasHit = false;
 
             if (_collider == null)
             {
@@ -56,6 +76,11 @@ namespace _Project.Scripts.Gameplay.Obstacles
             if (_collider != null)
             {
                 _collider.isTrigger = true;
+            }
+
+            if (_blinkRenderer != null)
+            {
+                _blinkRenderer.enabled = false;
             }
 
             gameObject.SetActive(true);
@@ -91,8 +116,17 @@ namespace _Project.Scripts.Gameplay.Obstacles
             }
 
             _isActive = false;
+            StopBlinking();
             gameObject.SetActive(false);
             OnRemoved?.Invoke(this);
+        }
+
+        public IEnumerator WaitForBlinkFinished()
+        {
+            while (_blinkRoutine != null)
+            {
+                yield return null;
+            }
         }
 
         public string BuildDisplayMessage()
@@ -112,7 +146,7 @@ namespace _Project.Scripts.Gameplay.Obstacles
 
         private void OnTriggerEnter(Collider other)
         {
-            if (!_isActive)
+            if (!_isActive || _wasHit)
             {
                 return;
             }
@@ -122,7 +156,46 @@ namespace _Project.Scripts.Gameplay.Obstacles
                 return;
             }
 
+            _wasHit = true;
+            StartBlinking();
             OnPlayerHit?.Invoke(this, _penaltyMinutes);
+        }
+
+        private void StartBlinking()
+        {
+            if (_blinkRenderer == null)
+            {
+                return;
+            }
+
+            if (_blinkRoutine != null)
+            {
+                StopCoroutine(_blinkRoutine);
+            }
+
+            _blinkRenderer.enabled = true;
+            _blinkRoutine = StartCoroutine(BlinkRoutine());
+        }
+
+        private void StopBlinking()
+        {
+            if (_blinkRoutine != null)
+            {
+                StopCoroutine(_blinkRoutine);
+                _blinkRoutine = null;
+            }
+        }
+
+        private IEnumerator BlinkRoutine()
+        {
+            for (int index = 0; index < _blinkCount; index++)
+            {
+                _blinkRenderer.enabled = !_blinkRenderer.enabled;
+                yield return new WaitForSecondsRealtime(_blinkInterval);
+            }
+
+            _blinkRenderer.enabled = false;
+            _blinkRoutine = null;
         }
     }
 }

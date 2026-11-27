@@ -9,6 +9,7 @@ namespace _Project.Scripts.Gameplay.Views
     public class StreetView : MonoBehaviour
     {
         private const float MAX_RAYCAST_DISTANCE = 500f;
+        private const float HIGHLIGHT_DURATION = 5f;
 
         [SerializeField] private InputHandler _inputHandler;
         [SerializeField] private Camera _targetCamera;
@@ -35,7 +36,7 @@ namespace _Project.Scripts.Gameplay.Views
         {
             if (_inputHandler != null)
             {
-                _inputHandler.OnMiddlePressed += HandleMiddleButtonPressed;
+                _inputHandler.OnSecondaryPressed += HandleSecondaryButtonPressed;
             }
         }
 
@@ -43,9 +44,10 @@ namespace _Project.Scripts.Gameplay.Views
         {
             if (_inputHandler != null)
             {
-                _inputHandler.OnMiddlePressed -= HandleMiddleButtonPressed;
+                _inputHandler.OnSecondaryPressed -= HandleSecondaryButtonPressed;
             }
 
+            CancelInvoke(nameof(ClearCurrentSelection));
             ClearCurrentSelection();
         }
 
@@ -54,7 +56,7 @@ namespace _Project.Scripts.Gameplay.Views
             ClearCurrentSelection();
         }
 
-        private void HandleMiddleButtonPressed(Vector2 screenPosition)
+        private void HandleSecondaryButtonPressed(Vector2 screenPosition)
         {
             if (_targetCamera == null)
             {
@@ -71,17 +73,17 @@ namespace _Project.Scripts.Gameplay.Views
                 {
                     if (_selectedZone == hitZone)
                     {
+                        CancelInvoke(nameof(ClearCurrentSelection));
                         ClearCurrentSelection();
-
                         return;
                     }
 
                     SelectZone(hitZone);
-
                     return;
                 }
             }
 
+            CancelInvoke(nameof(ClearCurrentSelection));
             ClearCurrentSelection();
         }
 
@@ -93,10 +95,12 @@ namespace _Project.Scripts.Gameplay.Views
             }
 
             _selectedZone = targetZone;
-
             _selectedZone.SetHighlighted(true);
 
             UpdateStreetText(_selectedZone.StreetAddress);
+
+            CancelInvoke(nameof(ClearCurrentSelection));
+            Invoke(nameof(ClearCurrentSelection), HIGHLIGHT_DURATION);
         }
 
         private void ClearCurrentSelection()

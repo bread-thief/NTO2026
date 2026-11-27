@@ -1,6 +1,8 @@
+using _Project.Scripts.Gameplay.Bakers;
 using _Project.Scripts.Gameplay.Drivers;
 using _Project.Scripts.Gameplay.Generators;
 using _Project.Scripts.Gameplay.Handlers;
+using _Project.Scripts.Gameplay.Obstacles;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -21,10 +23,12 @@ namespace _Project.Scripts.Gameplay.Controllers
 
         [SerializeField] private Camera _mainCamera;
         [SerializeField] private CityGenerator _generator;
+        [SerializeField] private CityNavMeshBaker _navMeshBaker;
         [SerializeField] private InputHandler _playerInputHandler;
         [SerializeField] private DeliveryRouteNode _pointANode;
         [SerializeField] private DeliveryRouteNode _pointBNode;
         [SerializeField] private RouteVehicleDriver _vehicleDriver;
+        [SerializeField] private RoadObstacleController _obstacleController;
         [SerializeField] private LineRenderer _routeLineRenderer;
         [SerializeField] private LayerMask _roadClickLayers;
 
@@ -36,7 +40,6 @@ namespace _Project.Scripts.Gameplay.Controllers
         [SerializeField] private bool _autoStartVehicleOnComplete = true;
         [SerializeField, Min(1)] private int _maxTrips = 5;
 
-        [Header("Start Zone")]
         [SerializeField, Min(0)] private int _startZoneCellRadius = 2;
         [SerializeField, Min(0f)] private float _startZoneRaycastPadding = 4f;
 
@@ -46,11 +49,15 @@ namespace _Project.Scripts.Gameplay.Controllers
         public bool IsRouteCompleted { get; private set; }
         public int CompletedTrips { get; private set; }
         public bool IsCurrentTargetPointB { get; private set; } = true;
+        public bool IsInitialized { get; private set; }
+
+        public int MaxTrips => _maxTrips;
+        public int RemainingTrips => Mathf.Max(0, _maxTrips - CompletedTrips);
+        public int RemainingRoundTrips => Mathf.CeilToInt((_maxTrips - CompletedTrips) / 2f);
 
         public DeliveryRouteNode PointANode => _pointANode;
         public DeliveryRouteNode PointBNode => _pointBNode;
         public RouteVehicleDriver VehicleDriver => _vehicleDriver;
-        public int MaxTrips => _maxTrips;
         public System.Collections.Generic.IReadOnlyList<Vector3> SmoothedWorldWaypoints => _smoothedWorldWaypoints;
 
         private readonly System.Collections.Generic.List<Vector2Int> _routeCellWaypoints = new System.Collections.Generic.List<Vector2Int>();
@@ -79,9 +86,19 @@ namespace _Project.Scripts.Gameplay.Controllers
                 _generator = FindAnyObjectByType<CityGenerator>();
             }
 
+            if (_navMeshBaker == null)
+            {
+                _navMeshBaker = FindAnyObjectByType<CityNavMeshBaker>();
+            }
+
             if (_playerInputHandler == null)
             {
                 _playerInputHandler = FindAnyObjectByType<InputHandler>();
+            }
+
+            if (_obstacleController == null)
+            {
+                _obstacleController = FindAnyObjectByType<RoadObstacleController>();
             }
 
             int roadAreaIndex = NavMesh.GetAreaFromName(ROAD_AREA_NAME);
@@ -106,6 +123,7 @@ namespace _Project.Scripts.Gameplay.Controllers
             }
 
             SubscribeVehicle();
+            SubscribeInitialization();
         }
 
         private void OnDisable()
@@ -117,6 +135,78 @@ namespace _Project.Scripts.Gameplay.Controllers
             }
 
             UnsubscribeVehicle();
+            UnsubscribeInitialization();
+        }
+
+        private void SubscribeInitialization()
+        {
+            if (_generator != null)
+            {
+                _generator.OnGenerated -= HandleCityGenerated;
+                _generator.OnGenerated += HandleCityGenerated;
+            }
+
+            if (_navMeshBaker != null)
+            {
+                _navMeshBaker.OnNavMeshBaked -= HandleNavMeshBaked;
+                _navMeshBaker.OnNavMeshBaked += HandleNavMeshBaked;
+            }
+        }
+
+        private void UnsubscribeInitialization()
+        {
+            if (_generator != null)
+            {
+                _generator.OnGenerated -= HandleCityGenerated;
+            }
+
+            if (_navMeshBaker != null)
+            {
+                _navMeshBaker.OnNavMeshBaked -= HandleNavMeshBaked;
+            }
+        }
+
+        private void HandleCityGenerated()
+        {
+            TryInitialize();
+        }
+
+        private void HandleNavMeshBaked()
+        {
+            TryInitialize();
+        }
+
+        private void TryInitialize()
+        {
+            if (IsInitialized)
+            {
+                return;
+            }
+
+            if (_generator == null)
+            {
+                return;
+            }
+
+            Vector2Int dimensions = _generator.GetGridDimensions;
+
+            if (dimensions.x <= 0 || dimensions.y <= 0)
+            {
+                return;
+            }
+
+            if (_navMeshBaker != null && !_navMeshBaker.IsNavMeshBaked)
+            {
+                return;
+            }
+
+            if (_pointANode == null || _pointBNode == null)
+            {
+                return;
+            }
+
+            IsInitialized = true;
+            ResetRoutePlanning();
         }
 
         private void SubscribeVehicle()
@@ -152,10 +242,7 @@ namespace _Project.Scripts.Gameplay.Controllers
 
         private void Start()
         {
-            if (_pointANode != null && _pointBNode != null)
-            {
-                ResetRoutePlanning();
-            }
+            TryInitialize();
         }
 
         public void ConfigureRouteEndpoints(DeliveryRouteNode startNode, DeliveryRouteNode endNode, RouteVehicleDriver driver)
@@ -173,7 +260,8 @@ namespace _Project.Scripts.Gameplay.Controllers
             _visitedCells.Clear();
             _isDragging = false;
 
-            ResetRoutePlanning();
+            IsInitialized = false;
+            TryInitialize();
 
             OnRouteEndpointsConfigured?.Invoke(_vehicleDriver);
         }
@@ -211,12 +299,66 @@ namespace _Project.Scripts.Gameplay.Controllers
             RebuildSmoothedPath();
         }
 
+        public void CompleteTripAfterPenalty()
+        {
+            _isVehicleDriving = false;
+            _isDragging = false;
+            IsRouteCompleted = true;
+
+            CompletedTrips++;
+            RegisterVisitedCellsFromRoute();
+
+            TrySpawnObstacleForCurrentTrip();
+
+            if (CompletedTrips >= _maxTrips)
+            {
+                if (_pointANode != null)
+                {
+                    _pointANode.SetMarkerActive(false);
+                }
+
+                if (_pointBNode != null)
+                {
+                    _pointBNode.SetMarkerActive(false);
+                }
+
+                ClearLineVisual();
+                _smoothedWorldWaypoints.Clear();
+                _smoothedWaypointDistances.Clear();
+                _routeCellWaypoints.Clear();
+                _totalSmoothedPathLength = 0f;
+
+                return;
+            }
+
+            IsCurrentTargetPointB = !IsCurrentTargetPointB;
+            ResetRoutePlanning();
+        }
+
+        public int GetRemainingRouteMinutes(float realSecondsPerGameMinute, float vehicleSpeed)
+        {
+            if (_smoothedWorldWaypoints.Count < 2 || vehicleSpeed <= 0f || realSecondsPerGameMinute <= 0f)
+            {
+                return 0;
+            }
+
+            float distanceAlongPath = GetVehicleDistanceAlongPath();
+            float remainingPathLength = Mathf.Max(0f, _totalSmoothedPathLength - distanceAlongPath);
+            float remainingRealSeconds = remainingPathLength / vehicleSpeed;
+            float remainingGameMinutes = remainingRealSeconds / realSecondsPerGameMinute;
+
+            return Mathf.CeilToInt(remainingGameMinutes);
+        }
+
         private void HandleVehicleDestinationReached()
         {
             _isVehicleDriving = false;
             CompletedTrips++;
 
             RegisterVisitedCellsFromRoute();
+
+            TrySpawnObstacleForCurrentTrip();
+
             ClearLineVisual();
 
             if (CompletedTrips >= _maxTrips)
@@ -238,6 +380,22 @@ namespace _Project.Scripts.Gameplay.Controllers
             ResetRoutePlanning();
         }
 
+        private void TrySpawnObstacleForCurrentTrip()
+        {
+            if (_obstacleController == null || _smoothedWorldWaypoints.Count < 2)
+            {
+                return;
+            }
+
+            if (_routeCellWaypoints.Count == 0)
+            {
+                return;
+            }
+
+            Vector2Int targetCell = _routeCellWaypoints[_routeCellWaypoints.Count - 1];
+            _obstacleController.SpawnObstacleOnRoute(_smoothedWorldWaypoints, targetCell);
+        }
+
         private void RegisterVisitedCellsFromRoute()
         {
             for (int index = 0; index < _routeCellWaypoints.Count; index++)
@@ -248,7 +406,7 @@ namespace _Project.Scripts.Gameplay.Controllers
 
         private void HandlePrimaryPressed(Vector2 screenPosition)
         {
-            if (IsRouteCompleted || CompletedTrips >= _maxTrips || _isVehicleDriving)
+            if (!IsInitialized || IsRouteCompleted || CompletedTrips >= _maxTrips || _isVehicleDriving)
             {
                 return;
             }

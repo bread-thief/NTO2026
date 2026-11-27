@@ -26,6 +26,7 @@ namespace _Project.Scripts.Gameplay.Drivers
         public event Action<int> OnWaypointReached;
 
         public bool IsDriving => _isDriving;
+        public float CurrentSpeed => _baseSpeed;
         public int CurrentWaypointIndex => _currentWaypointIndex;
         public int TotalWaypointCount => _activeWaypoints.Count;
 
@@ -104,6 +105,7 @@ namespace _Project.Scripts.Gameplay.Drivers
         {
             Vector3 flatStartPos = new Vector3(_segmentStartPosition.x, 0f, _segmentStartPosition.z);
             Vector3 segmentDir = flatTargetPos - flatStartPos;
+
             if (segmentDir.sqrMagnitude <= 0.000001f)
             {
                 return false;
@@ -144,6 +146,7 @@ namespace _Project.Scripts.Gameplay.Drivers
             }
 
             int roadAreaIndex = NavMesh.GetAreaFromName(ROAD_AREA_NAME);
+
             if (roadAreaIndex != INVALID_AREA_INDEX)
             {
                 _vehicleAgent.areaMask = 1 << roadAreaIndex;
@@ -185,6 +188,7 @@ namespace _Project.Scripts.Gameplay.Drivers
             }
 
             _activeWaypoints.Clear();
+
             for (int index = 0; index < waypoints.Count; index++)
             {
                 _activeWaypoints.Add(waypoints[index]);
@@ -195,6 +199,8 @@ namespace _Project.Scripts.Gameplay.Drivers
             _isDriving = true;
             _stuckTimer = 0f;
             _lastPosition = transform.position;
+            _vehicleAgent.updatePosition = true;
+            _vehicleAgent.updateRotation = false;
             _vehicleAgent.speed = _baseSpeed;
             _vehicleAgent.isStopped = false;
             _vehicleAgent.SetDestination(_activeWaypoints[_currentWaypointIndex]);
@@ -207,14 +213,24 @@ namespace _Project.Scripts.Gameplay.Drivers
             _currentWaypointIndex = 0;
             _stuckTimer = 0f;
 
-            if (_vehicleAgent != null && _vehicleAgent.isActiveAndEnabled && _vehicleAgent.isOnNavMesh)
+            if (_vehicleAgent == null)
             {
-                _vehicleAgent.isStopped = true;
-                _vehicleAgent.ResetPath();
+                _vehicleAgent = GetComponent<NavMeshAgent>();
             }
+
+            if (_vehicleAgent == null)
+            {
+                return;
+            }
+
+            _vehicleAgent.isStopped = true;
+            _vehicleAgent.ResetPath();
+            _vehicleAgent.velocity = Vector3.zero;
+            _vehicleAgent.updatePosition = false;
+            _vehicleAgent.updateRotation = false;
         }
 
-        public void StopAndReset(Vector3 resetWorldPosition)
+        public void TeleportAndStop(Vector3 targetWorldPosition)
         {
             _isDriving = false;
             _activeWaypoints.Clear();
@@ -226,18 +242,36 @@ namespace _Project.Scripts.Gameplay.Drivers
                 _vehicleAgent = GetComponent<NavMeshAgent>();
             }
 
-            if (_vehicleAgent != null && TryGetValidNavMeshPosition(resetWorldPosition, out Vector3 validPosition))
+            if (_vehicleAgent == null)
+            {
+                transform.position = targetWorldPosition;
+                _lastPosition = targetWorldPosition;
+                return;
+            }
+
+            _vehicleAgent.updatePosition = true;
+            _vehicleAgent.updateRotation = false;
+            _vehicleAgent.isStopped = true;
+            _vehicleAgent.ResetPath();
+            _vehicleAgent.velocity = Vector3.zero;
+
+            if (TryGetValidNavMeshPosition(targetWorldPosition, out Vector3 validPosition))
             {
                 _vehicleAgent.Warp(validPosition);
-                _vehicleAgent.isStopped = true;
-                _vehicleAgent.ResetPath();
                 _lastPosition = validPosition;
             }
             else
             {
-                transform.position = resetWorldPosition;
-                _lastPosition = resetWorldPosition;
+                _vehicleAgent.Warp(targetWorldPosition);
+                _lastPosition = targetWorldPosition;
             }
+
+            _vehicleAgent.updatePosition = false;
+        }
+
+        public void StopAndReset(Vector3 resetWorldPosition)
+        {
+            TeleportAndStop(resetWorldPosition);
         }
 
         public void SetSpeed(float speed)
@@ -279,6 +313,7 @@ namespace _Project.Scripts.Gameplay.Drivers
             if (currentSpeed < MIN_SPEED_THRESHOLD)
             {
                 _stuckTimer += Time.deltaTime;
+
                 if (_stuckTimer >= STUCK_TIME_THRESHOLD)
                 {
                     _stuckTimer = 0f;
@@ -322,6 +357,7 @@ namespace _Project.Scripts.Gameplay.Drivers
                 {
                     _vehicleAgent.isStopped = true;
                     _vehicleAgent.ResetPath();
+                    _vehicleAgent.velocity = Vector3.zero;
                 }
 
                 OnWaypointReached?.Invoke(reachedIndex);
