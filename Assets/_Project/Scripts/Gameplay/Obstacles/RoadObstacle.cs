@@ -28,17 +28,24 @@ namespace _Project.Scripts.Gameplay.Obstacles
 
         public string BlockedStreetAddress { get; private set; } = string.Empty;
         public string ReferenceLandmark { get; private set; } = string.Empty;
+        public string DisplayName { get; private set; } = string.Empty;
         public ObstaclePlacementType PlacementType { get; private set; } = ObstaclePlacementType.Unknown;
 
         private Collider _collider;
 
         public void Initialize(string blockedStreetAddress, string referenceLandmark, ObstaclePlacementType placementType, Time removalTime, int penaltyMinutes)
         {
+            Initialize(blockedStreetAddress, referenceLandmark, placementType, removalTime, penaltyMinutes, "Авария");
+        }
+
+        public void Initialize(string blockedStreetAddress, string referenceLandmark, ObstaclePlacementType placementType, Time removalTime, int penaltyMinutes, string displayName)
+        {
             BlockedStreetAddress = blockedStreetAddress;
             ReferenceLandmark = referenceLandmark;
             PlacementType = placementType;
             _removalTime = removalTime;
             _penaltyMinutes = penaltyMinutes;
+            DisplayName = displayName;
             _isActive = true;
 
             if (_collider == null)
@@ -52,6 +59,18 @@ namespace _Project.Scripts.Gameplay.Obstacles
             }
 
             gameObject.SetActive(true);
+        }
+
+        public void ApplyConfig(ObstacleConfig config)
+        {
+            if (config == null)
+            {
+                return;
+            }
+
+            _penaltyMinutes = config.PenaltyMinutes;
+            DisplayName = config.DisplayName;
+            transform.localScale = config.SpawnScale;
         }
 
         public bool ShouldBeRemoved(Time currentTime)
@@ -81,13 +100,13 @@ namespace _Project.Scripts.Gameplay.Obstacles
             switch (PlacementType)
             {
                 case ObstaclePlacementType.Intersection:
-                    return $"Перекрёсток между {BlockedStreetAddress} и {ReferenceLandmark} перекрыт";
+                    return $"{DisplayName}: перекрёсток между {BlockedStreetAddress} и {ReferenceLandmark} перекрыт";
                 case ObstaclePlacementType.MiddleOfStreet:
-                    return $"Середина {BlockedStreetAddress} перекрыта (ориентир: {ReferenceLandmark})";
+                    return $"{DisplayName}: середина {BlockedStreetAddress} перекрыта (ориентир: {ReferenceLandmark})";
                 case ObstaclePlacementType.StreetEnd:
-                    return $"Конец {BlockedStreetAddress} перекрыт (ориентир: {ReferenceLandmark})";
+                    return $"{DisplayName}: конец {BlockedStreetAddress} перекрыт (ориентир: {ReferenceLandmark})";
                 default:
-                    return $"Участок {BlockedStreetAddress} перекрыт";
+                    return $"{DisplayName}: участок {BlockedStreetAddress} перекрыт";
             }
         }
 

@@ -11,19 +11,18 @@ namespace _Project.Scripts.Gameplay.Obstacles
 {
     public class RoadObstacleController : MonoBehaviour
     {
-        private const int DEFAULT_PENALTY_MINUTES = 30;
         private const int MIN_ALTERNATIVE_PATH_DISTANCE = 3;
         private const int MAX_ALTERNATIVE_BFS_NODES = 200;
         private const int MAX_PICK_ATTEMPTS = 32;
         private const float OBSTACLE_SPAWN_HEIGHT = 10f;
+        private const int LANDMARK_SEARCH_RADIUS = 2;
 
         [SerializeField] private TimeController _timeController;
         [SerializeField] private CityGenerator _generator;
         [SerializeField] private CityStreetNamer _streetNamer;
         [SerializeField] private GameObject _obstaclePrefab;
-        [SerializeField] private int _penaltyMinutes = DEFAULT_PENALTY_MINUTES;
-        [SerializeField] private int _removalDelayMinutes = 60;
-        [SerializeField] private string[] _landmarkWords;
+        [SerializeField] private ObstacleConfig _defaultConfig;
+        [SerializeField] private List<ObstacleConfig> _availableConfigs = new List<ObstacleConfig>();
 
         public event Action<RoadObstacle> OnObstacleSpawned;
         public event Action<RoadObstacle> OnObstacleRemoved;
@@ -50,18 +49,6 @@ namespace _Project.Scripts.Gameplay.Obstacles
             {
                 _streetNamer = FindAnyObjectByType<CityStreetNamer>();
             }
-
-            if (_landmarkWords == null || _landmarkWords.Length == 0)
-            {
-                _landmarkWords = new string[]
-                {
-                    "шоссе Мира",
-                    "проспект Победы",
-                    "улица Ленина",
-                    "переулок Садовый",
-                    "площадь Свободы"
-                };
-            }
         }
 
         private void OnEnable()
@@ -84,7 +71,14 @@ namespace _Project.Scripts.Gameplay.Obstacles
 
         public void SpawnObstacleOnRoute(IReadOnlyList<Vector3> travelledRoute, Vector2Int targetCell)
         {
-            if (_generator == null || _obstaclePrefab == null || travelledRoute == null || travelledRoute.Count < 2)
+            if (_generator == null || travelledRoute == null || travelledRoute.Count < 2)
+            {
+                return;
+            }
+
+            ObstacleConfig selectedConfig = PickConfig();
+
+            if (selectedConfig == null)
             {
                 return;
             }
@@ -106,25 +100,25 @@ namespace _Project.Scripts.Gameplay.Obstacles
                 blockedStreet = $"улица {spawnCell.x}-{spawnCell.y}";
             }
 
-            string landmark = PickLandmark();
+            string landmark = _streetNamer != null
+                ? _streetNamer.GetLandmarkNearCell(spawnCell, blockedStreet, LANDMARK_SEARCH_RADIUS)
+                : string.Empty;
 
             Time removalTime = _timeController != null
-                ? _timeController.CurrentTime.AddMinutes(_removalDelayMinutes)
+                ? _timeController.CurrentTime.AddMinutes(selectedConfig.RemovalDelayMinutes)
                 : new Time(0, 0);
 
             Vector3 worldPosition = _generator.GetWorldPositionFromCellCoordinates(spawnCell.x, spawnCell.y);
             worldPosition.y = OBSTACLE_SPAWN_HEIGHT;
 
-            GameObject obstacleObject = Instantiate(_obstaclePrefab, worldPosition, Quaternion.identity);
-
-            RoadObstacle obstacle = obstacleObject.GetComponent<RoadObstacle>();
+            RoadObstacle obstacle = InstantiateObstacle(worldPosition, selectedConfig);
 
             if (obstacle == null)
             {
-                obstacle = obstacleObject.AddComponent<RoadObstacle>();
+                return;
             }
 
-            obstacle.Initialize(blockedStreet, landmark, placementType, removalTime, _penaltyMinutes);
+            obstacle.Initialize(blockedStreet, landmark, placementType, removalTime, selectedConfig.PenaltyMinutes, selectedConfig.DisplayName);
             obstacle.OnPlayerHit += HandleObstacleHit;
 
             _activeObstacles.Add(obstacle);
@@ -148,6 +142,71 @@ namespace _Project.Scripts.Gameplay.Obstacles
             }
 
             _activeObstacles.Clear();
+        }
+
+        private RoadObstacle InstantiateObstacle(Vector3 worldPosition, ObstacleConfig config)
+        {
+            if (_obstaclePrefab != null)
+            {
+                GameObject instance = Instantiate(_obstaclePrefab, worldPosition, Quaternion.identity);
+                instance.transform.localScale = config.SpawnScale;
+
+                RoadObstacle obstacle = instance.GetComponent<RoadObstacle>();
+
+                if (obstacle == null)
+                {
+                    obstacle = instance.AddComponent<RoadObstacle>();
+                }
+
+                obstacle.ApplyConfig(config);
+                return obstacle;
+            }
+
+            return ObstacleFactory.CreateDefault(worldPosition, config, transform);
+        }
+
+        private ObstacleConfig PickConfig()
+        {
+            if (_availableConfigs == null || _availableConfigs.Count == 0)
+            {
+                return _defaultConfig;
+            }
+
+            List<ObstacleConfig> validConfigs = new List<ObstacleConfig>();
+            int totalWeight = 0;
+
+            for (int index = 0; index < _availableConfigs.Count; index++)
+            {
+                ObstacleConfig config = _availableConfigs[index];
+
+                if (config == null || !config.IsActive)
+                {
+                    continue;
+                }
+
+                validConfigs.Add(config);
+                totalWeight += Mathf.Max(1, config.Weight);
+            }
+
+            if (validConfigs.Count == 0)
+            {
+                return _defaultConfig;
+            }
+
+            int randomRoll = UnityEngine.Random.Range(0, totalWeight);
+            int accumulated = 0;
+
+            for (int index = 0; index < validConfigs.Count; index++)
+            {
+                accumulated += Mathf.Max(1, validConfigs[index].Weight);
+
+                if (randomRoll < accumulated)
+                {
+                    return validConfigs[index];
+                }
+            }
+
+            return validConfigs[validConfigs.Count - 1];
         }
 
         private bool TryPickObstacleCell(
@@ -344,16 +403,6 @@ namespace _Project.Scripts.Gameplay.Obstacles
             }
 
             return visited.Count >= MIN_ALTERNATIVE_PATH_DISTANCE;
-        }
-
-        private string PickLandmark()
-        {
-            if (_landmarkWords == null || _landmarkWords.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            return _landmarkWords[UnityEngine.Random.Range(0, _landmarkWords.Length)];
         }
 
         private void HandleObstacleHit(RoadObstacle obstacle, int penaltyMinutes)

@@ -36,6 +36,10 @@ namespace _Project.Scripts.Gameplay.Controllers
         [SerializeField] private bool _autoStartVehicleOnComplete = true;
         [SerializeField, Min(1)] private int _maxTrips = 5;
 
+        [Header("Start Zone")]
+        [SerializeField, Min(0)] private int _startZoneCellRadius = 2;
+        [SerializeField, Min(0f)] private float _startZoneRaycastPadding = 4f;
+
         public event System.Action<System.Collections.Generic.IReadOnlyList<Vector3>> OnRouteCompleted;
         public event System.Action<RouteVehicleDriver> OnRouteEndpointsConfigured;
 
@@ -248,15 +252,62 @@ namespace _Project.Scripts.Gameplay.Controllers
                 return;
             }
 
+            if (_routeCellWaypoints.Count == 0)
+            {
+                return;
+            }
+
+            Vector2Int currentLastCell = _routeCellWaypoints[_routeCellWaypoints.Count - 1];
+
+            bool started = false;
+
             if (TryGetRaycastCell(screenPosition, out Vector2Int clickedCell))
             {
-                Vector2Int lastCell = _routeCellWaypoints.Count > 0 ? _routeCellWaypoints[_routeCellWaypoints.Count - 1] : Vector2Int.zero;
-
-                if (_routeCellWaypoints.Count == 0 || clickedCell == lastCell)
+                if (IsCellWithinStartZone(clickedCell, currentLastCell))
                 {
-                    _isDragging = true;
+                    started = true;
                 }
             }
+
+            if (!started && TryGetRaycastCellWithPadding(screenPosition, currentLastCell))
+            {
+                started = true;
+            }
+
+            if (started)
+            {
+                _isDragging = true;
+            }
+        }
+
+        private bool IsCellWithinStartZone(Vector2Int candidateCell, Vector2Int anchorCell)
+        {
+            int deltaX = Mathf.Abs(candidateCell.x - anchorCell.x);
+            int deltaY = Mathf.Abs(candidateCell.y - anchorCell.y);
+
+            return deltaX <= _startZoneCellRadius && deltaY <= _startZoneCellRadius;
+        }
+
+        private bool TryGetRaycastCellWithPadding(Vector2 screenPosition, Vector2Int anchorCell)
+        {
+            if (_generator == null || _mainCamera == null)
+            {
+                return false;
+            }
+
+            Vector3 anchorWorld = _generator.GetWorldPositionFromCellCoordinates(anchorCell.x, anchorCell.y);
+
+            if (Physics.Raycast(_mainCamera.ScreenPointToRay(screenPosition), out RaycastHit hitInfo, _maxRaycastDistance, _roadClickLayers, QueryTriggerInteraction.Collide))
+            {
+                if ((hitInfo.point - anchorWorld).sqrMagnitude <= _startZoneRaycastPadding * _startZoneRaycastPadding)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return false;
         }
 
         private void HandlePrimaryReleased(Vector2 screenPosition)

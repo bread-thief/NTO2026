@@ -23,8 +23,7 @@ namespace _Project.Scripts.Gameplay.Namers
         [SerializeField] private CityGenerator _generator;
         [SerializeField] private LayerMask _streetZoneLayer;
         [SerializeField] private Material _streetHighlightMaterial;
-        [SerializeField]
-        private List<string> _streetNameWords = new List<string>()
+        [SerializeField] private List<string> _streetNameWords = new List<string>()
         {
             "Мира", "Лесная", "Советская", "Центральная", "Победы",
             "Молодёжная", "Садовая", "Школьная", "Новая", "Набережная",
@@ -140,6 +139,73 @@ namespace _Project.Scripts.Gameplay.Namers
             }
 
             FillRemainingRoadCellsFromNeighbors(width, height);
+        }
+
+        public string GetLandmarkNearCell(Vector2Int cell, string excludedAddress, int searchRadius = 2)
+        {
+            if (_generator == null)
+            {
+                return GetRandomStreetWord();
+            }
+
+            Vector2Int gridDimensions = _generator.GetGridDimensions;
+
+            List<string> neighbors = new List<string>();
+
+            for (int offsetX = -searchRadius; offsetX <= searchRadius; offsetX++)
+            {
+                for (int offsetY = -searchRadius; offsetY <= searchRadius; offsetY++)
+                {
+                    if (offsetX == 0 && offsetY == 0)
+                    {
+                        continue;
+                    }
+
+                    Vector2Int neighbor = new Vector2Int(cell.x + offsetX, cell.y + offsetY);
+
+                    if (neighbor.x < 0 || neighbor.x >= gridDimensions.x || neighbor.y < 0 || neighbor.y >= gridDimensions.y)
+                    {
+                        continue;
+                    }
+
+                    if (!_cellStreetAddresses.TryGetValue(neighbor, out string neighborAddress))
+                    {
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(neighborAddress))
+                    {
+                        continue;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(excludedAddress) && neighborAddress == excludedAddress)
+                    {
+                        continue;
+                    }
+
+                    if (!neighbors.Contains(neighborAddress))
+                    {
+                        neighbors.Add(neighborAddress);
+                    }
+                }
+            }
+
+            if (neighbors.Count > 0)
+            {
+                return neighbors[UnityEngine.Random.Range(0, neighbors.Count)];
+            }
+
+            return GetRandomStreetWord();
+        }
+
+        public string GetRandomStreetWord()
+        {
+            if (_streetNameWords == null || _streetNameWords.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return _streetNameWords[UnityEngine.Random.Range(0, _streetNameWords.Count)];
         }
 
         public void ClearSpawnedZones()
