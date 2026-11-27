@@ -23,7 +23,8 @@ namespace _Project.Scripts.Gameplay.Namers
         [SerializeField] private CityGenerator _generator;
         [SerializeField] private LayerMask _streetZoneLayer;
         [SerializeField] private Material _streetHighlightMaterial;
-        [SerializeField] private List<string> _streetNameWords = new List<string>()
+        [SerializeField]
+        private List<string> _streetNameWords = new List<string>()
         {
             "Мира", "Лесная", "Советская", "Центральная", "Победы",
             "Молодёжная", "Садовая", "Школьная", "Новая", "Набережная",
@@ -206,6 +207,24 @@ namespace _Project.Scripts.Gameplay.Namers
             }
 
             return _streetNameWords[UnityEngine.Random.Range(0, _streetNameWords.Count)];
+        }
+
+        public string FormatRouteDescription(Vector3 pointAPosition, Vector3 pointBPosition, string fromLabel = "из", string toLabel = "в")
+        {
+            string streetA = GetStreetAddressByWorldPosition(pointAPosition);
+            string streetB = GetStreetAddressByWorldPosition(pointBPosition);
+
+            if (string.IsNullOrWhiteSpace(streetA))
+            {
+                streetA = "неизвестная улица";
+            }
+
+            if (string.IsNullOrWhiteSpace(streetB))
+            {
+                streetB = "неизвестная улица";
+            }
+
+            return $"Доставить груз {fromLabel}: {streetA}\nДоставить груз {toLabel}: {streetB}";
         }
 
         public void ClearSpawnedZones()
