@@ -37,6 +37,11 @@ namespace _Project.Scripts.Gameplay.Spawners
             ResolveMissingSceneReferences();
         }
 
+        public void ApplyDistanceConfig(int distance)
+        {
+            _minimumDistanceInCells = distance;   
+        }
+
         private void OnEnable()
         {
             ResolveMissingSceneReferences();

@@ -1,4 +1,5 @@
 using _Project.Scripts.Gameplay.Bakers;
+using _Project.Scripts.Gameplay.Configs;
 using _Project.Scripts.Gameplay.Drivers;
 using _Project.Scripts.Gameplay.Generators;
 using _Project.Scripts.Gameplay.Handlers;
@@ -45,6 +46,7 @@ namespace _Project.Scripts.Gameplay.Controllers
 
         public event System.Action<System.Collections.Generic.IReadOnlyList<Vector3>> OnRouteCompleted;
         public event System.Action<RouteVehicleDriver> OnRouteEndpointsConfigured;
+        public event System.Action OnAllTripsCompleted;
 
         public bool IsRouteCompleted { get; private set; }
         public int CompletedTrips { get; private set; }
@@ -138,6 +140,16 @@ namespace _Project.Scripts.Gameplay.Controllers
             UnsubscribeInitialization();
         }
 
+        public void ApplyShiftConfig(ShiftConfig config)
+        {
+            if (config == null)
+            {
+                return;
+            }
+
+            _maxTrips = config.MaxTrips;
+        }
+        
         private void SubscribeInitialization()
         {
             if (_generator != null)
@@ -328,6 +340,7 @@ namespace _Project.Scripts.Gameplay.Controllers
                 _routeCellWaypoints.Clear();
                 _totalSmoothedPathLength = 0f;
 
+                OnAllTripsCompleted?.Invoke();
                 return;
             }
 
@@ -373,6 +386,7 @@ namespace _Project.Scripts.Gameplay.Controllers
                     _pointBNode.SetMarkerActive(false);
                 }
 
+                OnAllTripsCompleted?.Invoke();
                 return;
             }
 

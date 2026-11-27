@@ -1,4 +1,5 @@
 using System;
+using _Project.Scripts.Gameplay.Configs;
 using UnityEngine;
 using UnityTime = UnityEngine.Time;
 
@@ -45,6 +46,21 @@ namespace _Project.Scripts.Gameplay.Controllers
                 _currentTime = new Time(_shiftStart.Hour, _shiftStart.Minute);
             }
 
+            IsShiftActive = false;
+            IsShiftEnded = false;
+        }
+
+        public void ApplyShiftConfig(ShiftConfig config)
+        {
+            if (config == null)
+            {
+                return;
+            }
+
+            _shiftStart = new Time(config.ShiftStart.Hour, config.ShiftStart.Minute);
+            _shiftEnd = new Time(config.ShiftEnd.Hour, config.ShiftEnd.Minute);
+            _currentTime = new Time(_shiftStart.Hour, _shiftStart.Minute);
+            _accumulatedSeconds = 0f;
             IsShiftActive = false;
             IsShiftEnded = false;
         }

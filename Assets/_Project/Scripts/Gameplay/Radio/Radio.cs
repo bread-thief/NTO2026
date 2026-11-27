@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using _Project.Scripts.Meta.UI;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -18,6 +17,7 @@ namespace _Project.Scripts.Gameplay.Radio
         private int _currentIndex;
         private AudioClip _currentTrack;
         private Coroutine _messageRoutine;
+        private bool _isShutDown;
 
         public bool IsPlayingMusic { get; private set; }
 
@@ -32,7 +32,12 @@ namespace _Project.Scripts.Gameplay.Radio
 
         private void Update()
         {
-            if (IsPlayingMusic && !_audioSource.isPlaying && _audioSource.timeSamples == 0)
+            if (_isShutDown)
+            {
+                return;
+            }
+
+            if (IsPlayingMusic && _audioSource != null && !_audioSource.isPlaying && _audioSource.timeSamples == 0)
             {
                 IsPlayingMusic = false;
                 NextTrack();
@@ -41,7 +46,7 @@ namespace _Project.Scripts.Gameplay.Radio
 
         private void PlayCurrentTrack()
         {
-            if (_shuffledPlaylist.Count == 0)
+            if (_shuffledPlaylist.Count == 0 || _audioSource == null)
             {
                 return;
             }
@@ -58,26 +63,26 @@ namespace _Project.Scripts.Gameplay.Radio
             _shuffledPlaylist.AddRange(_music);
             _currentIndex = 0;
 
-            for (int i = _shuffledPlaylist.Count - 1; i > 0; i--)
+            for (int index = _shuffledPlaylist.Count - 1; index > 0; index--)
             {
-                int randomIndex = Random.Range(0, i + 1);
-                AudioClip temp = _shuffledPlaylist[i];
-                _shuffledPlaylist[i] = _shuffledPlaylist[randomIndex];
+                int randomIndex = Random.Range(0, index + 1);
+                AudioClip temp = _shuffledPlaylist[index];
+                _shuffledPlaylist[index] = _shuffledPlaylist[randomIndex];
                 _shuffledPlaylist[randomIndex] = temp;
             }
 
             if (_shuffledPlaylist.Count > 1 && _shuffledPlaylist[0] == _currentTrack)
             {
-                int lastIdx = _shuffledPlaylist.Count - 1;
+                int lastIndex = _shuffledPlaylist.Count - 1;
                 AudioClip temp = _shuffledPlaylist[0];
-                _shuffledPlaylist[0] = _shuffledPlaylist[lastIdx];
-                _shuffledPlaylist[lastIdx] = temp;
+                _shuffledPlaylist[0] = _shuffledPlaylist[lastIndex];
+                _shuffledPlaylist[lastIndex] = temp;
             }
         }
 
         public void NextTrack()
         {
-            if (_music == null || _music.Length == 0)
+            if (_isShutDown || _music == null || _music.Length == 0)
             {
                 return;
             }
@@ -94,7 +99,7 @@ namespace _Project.Scripts.Gameplay.Radio
 
         public void SendMessageByRadio(string message)
         {
-            if (string.IsNullOrWhiteSpace(message))
+            if (_isShutDown || string.IsNullOrWhiteSpace(message))
             {
                 return;
             }
@@ -107,9 +112,35 @@ namespace _Project.Scripts.Gameplay.Radio
             }
         }
 
+        public void ShutDownRadio()
+        {
+            _isShutDown = true;
+            _messageQueue.Clear();
+
+            if (_messageRoutine != null)
+            {
+                StopCoroutine(_messageRoutine);
+                _messageRoutine = null;
+            }
+
+            if (_audioSource != null)
+            {
+                _audioSource.Stop();
+                _audioSource.clip = null;
+            }
+
+            if (_radioUI != null)
+            {
+                _radioUI.ForceHide();
+            }
+
+            IsPlayingMusic = false;
+            enabled = false;
+        }
+
         public void ChangeMusic(int musicID)
         {
-            if (_music == null || musicID < 0 || musicID >= _music.Length)
+            if (_isShutDown || _music == null || musicID < 0 || musicID >= _music.Length || _audioSource == null)
             {
                 return;
             }
@@ -121,7 +152,7 @@ namespace _Project.Scripts.Gameplay.Radio
 
         public void ChangeMusicByRandom()
         {
-            if (_music == null || _music.Length == 0)
+            if (_isShutDown || _music == null || _music.Length == 0 || _audioSource == null)
             {
                 return;
             }
@@ -137,11 +168,22 @@ namespace _Project.Scripts.Gameplay.Radio
                 string message = _messageQueue.Dequeue();
 
                 IsPlayingMusic = false;
-                _audioSource.Pause();
 
-                yield return _radioUI.PrintText(message);
+                if (_audioSource != null)
+                {
+                    _audioSource.Pause();
+                }
 
-                _audioSource.UnPause();
+                if (_radioUI != null)
+                {
+                    yield return _radioUI.PrintText(message);
+                }
+
+                if (_audioSource != null)
+                {
+                    _audioSource.UnPause();
+                }
+
                 IsPlayingMusic = true;
             }
 

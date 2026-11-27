@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Gameplay.Obstacles
 {
-    [CreateAssetMenu(fileName = "ObstacleConfig", menuName = "Route Rebuilt/Obstacle Config")]
+    [CreateAssetMenu(fileName = "ObstacleConfig", menuName = "_Project/ObstacleConfig")]
     public class ObstacleConfig : ScriptableObject
     {
         [field: SerializeField] public string DisplayName { get; private set; } = "Авария";

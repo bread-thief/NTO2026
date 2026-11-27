@@ -37,6 +37,8 @@ namespace _Project.Scripts.Gameplay.Obstacles
         private readonly List<RoadObstacle> _obstaclesPendingRemoval = new List<RoadObstacle>();
 
         public IReadOnlyList<RoadObstacle> ActiveObstacles => _activeObstacles;
+        public int TotalPenalties { get; private set; }
+        public int TotalPenaltyMinutes { get; private set; }
 
         private void Awake()
         {
@@ -460,6 +462,9 @@ namespace _Project.Scripts.Gameplay.Obstacles
             }
 
             obstacle.OnPlayerHit -= HandleObstacleHit;
+
+            TotalPenalties++;
+            TotalPenaltyMinutes += penaltyMinutes;
 
             StartCoroutine(ObstacleHitSequenceRoutine(obstacle, penaltyMinutes));
         }

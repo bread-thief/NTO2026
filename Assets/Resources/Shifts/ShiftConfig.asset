@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfdffcdb00c78604dbfcdec60c592d4a, type: 3}
+  m_Name: ShiftConfig
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Gameplay.Configs.ShiftConfig
+  <ShiftName>k__BackingField: "\u041E\u0431\u044B\u0447\u043D\u0430\u044F \u0441\u043C\u0435\u043D\u0430"
+  <ShiftStart>k__BackingField:
+    <Hour>k__BackingField: 10
+    <Minute>k__BackingField: 0
+  <ShiftEnd>k__BackingField:
+    <Hour>k__BackingField: 17
+    <Minute>k__BackingField: 0
+  <MaxTrips>k__BackingField: 5
+  <MinimumDistanceInCells>k__BackingField: 5
+  <MaximumDistanceInCells>k__BackingField: 15
