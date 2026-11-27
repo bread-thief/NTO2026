@@ -50,6 +50,7 @@ namespace _Project.Scripts.Gameplay.Controllers
         public DeliveryRouteNode PointANode => _pointANode;
         public DeliveryRouteNode PointBNode => _pointBNode;
         public RouteVehicleDriver VehicleDriver => _vehicleDriver;
+        public int MaxTrips => _maxTrips;
         public System.Collections.Generic.IReadOnlyList<Vector3> SmoothedWorldWaypoints => _smoothedWorldWaypoints;
 
         private readonly System.Collections.Generic.List<Vector2Int> _routeCellWaypoints = new System.Collections.Generic.List<Vector2Int>();

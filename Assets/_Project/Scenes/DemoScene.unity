@@ -606,8 +606,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 16
+  m_fontSizeBase: 16
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1415,7 +1415,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   _textMeshProUGUI: {fileID: 81531479}
-  _deliveryShiftController: {fileID: 1262291930}
   _routePlannerController: {fileID: 1379558088}
   _cityStreetNamer: {fileID: 1788906750}
 --- !u!1 &286550602
