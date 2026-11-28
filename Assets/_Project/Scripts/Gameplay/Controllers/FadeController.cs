@@ -7,7 +7,14 @@ namespace _Project.Scripts.Gameplay.Controllers
     public class FadeController : MonoBehaviour
     {
         [SerializeField] private Image _fadeImage;
-        
+        public bool IsBlending
+        {
+            get
+            {
+                return _fadeImage.color.a != 1f && _fadeImage.color.a != 0f;
+            }
+        }
+
         public void FadeOut()
         {
             StartCoroutine(FadeRoutine(1f, 1f));

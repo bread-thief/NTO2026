@@ -92,70 +92,21 @@ namespace _Project.Scripts.Gameplay.Makers
             BuildAvailableSlots();
         }
 
-        private void Up(bool isHour = false)
+        private void Up(bool isHour = false) => ChangeTime(1, isHour);
+        private void Down(bool isHour = false) => ChangeTime(-1, isHour);
+
+        private void ChangeTime(int delta, bool isHour)
         {
             if (isHour)
             {
-                _hour++;
+                _hour = (_hour + delta + 24) % 24;
+                _hourText.text = $"{_hour:00}";
             }
             else
             {
-                _minute++;
+                _minute = (_minute + delta + 60) % 60;
+                _minuteText.text = $"{_minute:00}";
             }
-
-            if (_hour <= 0)
-            {
-                _hour = 24;
-            }
-            else if (_hour >= 24)
-            {
-                _hour = 1;
-            }
-
-            if (_minute <= 0)
-            {
-                _minute = 60;
-            }
-            else if (_minute >= 24)
-            {
-                _minute = 0;
-            }
-
-            _hourText.text = $"{_hour:00}";
-            _minuteText.text = $"{_minute:00}";
-        }
-
-        private void Down(bool isHour = false)
-        {
-            if (isHour)
-            {
-                _hour--;
-            }
-            else
-            {
-                _minute--;
-            }
-
-            if (_hour <= 0)
-            {
-                _hour = 24;
-            }
-            else if (_hour >= 24)
-            {
-                _hour = 1;
-            }
-
-            if (_minute <= 0)
-            {
-                _minute = 60;
-            }
-            else if (_minute >= 24)
-            {
-                _minute = 0;
-            }
-
-            _hourText.text = $"{_hour:00}";
-            _minuteText.text = $"{_minute:00}";
         }
 
         private void OnEnable()
