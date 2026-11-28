@@ -1,6 +1,7 @@
 using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace _Project.Scripts.Gameplay.Controllers
 {
@@ -10,7 +11,6 @@ namespace _Project.Scripts.Gameplay.Controllers
         [SerializeField] private DeliveryShiftController _deliveryShiftController;
         [SerializeField] private FadeController _fadeController;
         [SerializeField] private CinemachineBrain _cinemachineBrain;
-        [SerializeField] private CinemachineCamera[] _cameras;
         [SerializeField] private Changes[] _changes;
         [SerializeField] private GameObject _zonesPanel;
         [SerializeField] private int _cameraIDAfterReset;
@@ -44,21 +44,14 @@ namespace _Project.Scripts.Gameplay.Controllers
         {
             if (CanMove && !_cinemachineBrain.IsBlending)
             {
-                foreach (CinemachineCamera camera in _cameras)
+                foreach (Changes changes in _changes)
                 {
-                    camera.Priority = 0;
+                    changes.Camera.Priority = 0;
+                    changes.CameraButton.interactable = true;
                 }
 
                 _changes[id].Camera.Priority = 1;
-                foreach (GameObject obj in _changes[id].ToDisable)
-                {
-                    obj.SetActive(false);
-                }
-
-                foreach (GameObject obj in _changes[id].ToEnable)
-                {
-                    obj.SetActive(true);
-                }
+                _changes[id].CameraButton.interactable = false;
             }
         }
         
@@ -86,8 +79,7 @@ namespace _Project.Scripts.Gameplay.Controllers
         public class Changes
         {
             [field: SerializeField] public CinemachineCamera Camera { get; private set; }
-            [field: SerializeField] public GameObject[] ToDisable { get; private set; }
-            [field: SerializeField] public GameObject[] ToEnable { get; private set; }
+            [field: SerializeField] public Button CameraButton { get; private set; }
         }
     }
 }

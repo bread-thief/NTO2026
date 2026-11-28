@@ -1,3 +1,4 @@
+using System;
 using _Project.Scripts.Gameplay.Controllers;
 using _Project.Scripts.Gameplay.Drivers;
 using _Project.Scripts.Gameplay.Namers;
@@ -10,6 +11,7 @@ namespace _Project.Scripts.Meta.UI
     {
         [SerializeField] private TextMeshProUGUI _textMeshProUGUI;
         [SerializeField] private RoutePlannerController _routePlannerController;
+        [SerializeField] private DeliveryShiftController _deliveryShiftController;
         [SerializeField] private CityStreetNamer _cityStreetNamer;
         [SerializeField] private TimeController _timeController;
 
@@ -33,6 +35,11 @@ namespace _Project.Scripts.Meta.UI
             {
                 _timeController.OnShiftEnded += ClearInfo;
             }
+
+            if (_deliveryShiftController != null)
+            {
+                _deliveryShiftController.OnDeliveryCompleted += UpdateInfoWithInt;
+            }
         }
 
         private void OnDisable()
@@ -47,6 +54,16 @@ namespace _Project.Scripts.Meta.UI
             {
                 _timeController.OnShiftEnded -= ClearInfo;
             }
+
+            if (_deliveryShiftController != null)
+            {
+                _deliveryShiftController.OnDeliveryCompleted -= UpdateInfoWithInt;
+            }
+        }
+
+        private void UpdateInfoWithInt(int i)
+        {
+            UpdateInfo(null);
         }
 
         private void UpdateInfo(RouteVehicleDriver _routeVehicleDriver)
@@ -55,10 +72,20 @@ namespace _Project.Scripts.Meta.UI
             {
                 return;
             }
+            string routeDescription = String.Empty;
 
-            string routeDescription = _cityStreetNamer.FormatRouteDescription(
-                _routePlannerController.PointANode.RoadNavMeshPosition,
-                _routePlannerController.PointBNode.RoadNavMeshPosition);
+            if (_routePlannerController.IsCurrentTargetPointB)
+            {
+                routeDescription = _cityStreetNamer.FormatRouteDescription(
+                    _routePlannerController.PointANode.RoadNavMeshPosition,
+                    _routePlannerController.PointBNode.RoadNavMeshPosition);
+            }
+            else
+            {
+                routeDescription = _cityStreetNamer.FormatRouteDescription(
+                    _routePlannerController.PointBNode.RoadNavMeshPosition,
+                    _routePlannerController.PointANode.RoadNavMeshPosition);
+            }
 
             _textMeshProUGUI.text = $"Заказ № {_routePlannerController.CompletedTrips + 1}\nВсего: {_routePlannerController.MaxTrips}\n\n{routeDescription}";
         }
